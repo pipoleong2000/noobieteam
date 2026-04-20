@@ -52,7 +52,7 @@ Noobieteam is designed for easy on-premise deployment. Follow these exact steps 
 
 ### Prerequisites
 - Node.js (v18 or higher)
-- MongoDB running locally (or use the built-in memory server fallback)
+- MongoDB running locally (or use the built-in memory server fallback) [https://www.mongodb.com/docs/v8.0/tutorial/install-mongodb-on-ubuntu/]
 - Git
 
 ### 1. Clone the Repository
