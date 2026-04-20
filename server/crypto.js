@@ -26,6 +26,15 @@ const deriveKey = (password) => {
  * @returns {object} { iv (hex), authTag (hex), encryptedHex (hex) }
  */
 const encryptVaultSecret = (plaintext, password) => {
+    if (!plaintext) {
+        console.error("[VAULT ERROR] Plaintext payload is missing. Cannot encrypt empty data.");
+        throw new Error("Payload is required for encryption.");
+    }
+    if (!password) {
+        console.error("[VAULT ERROR] No password/key provided for encryption! This usually happens if you signed in with Google OAuth but haven't set up a Master Vault PIN yet. Please go to your Profile Menu -> 'Create Master PIN'.");
+        throw new Error("Encryption failed: Missing authentication key or Master PIN.");
+    }
+    
     try {
         const key = deriveKey(password);
         const iv = crypto.randomBytes(IV_LENGTH);
@@ -41,7 +50,7 @@ const encryptVaultSecret = (plaintext, password) => {
             value: encryptedHex
         };
     } catch (e) {
-        console.error("Encryption Failure:", e.message);
+        console.error("[VAULT ERROR] Encryption Failure:", e.message);
         throw new Error("Encryption failed.");
     }
 };
@@ -51,6 +60,10 @@ const encryptVaultSecret = (plaintext, password) => {
  * @returns {string} The decrypted plaintext.
  */
 const decryptVaultSecret = (encryptedHex, ivHex, authTagHex, password) => {
+    if (!password) {
+        console.error("[VAULT ERROR] No password/key provided for decryption! If using Google OAuth, ensure your Master Vault PIN is configured.");
+        throw new Error("Decryption failed: Missing authentication key or Master PIN.");
+    }
     try {
         const key = deriveKey(password);
         const iv = Buffer.from(ivHex, 'hex');
@@ -64,7 +77,7 @@ const decryptVaultSecret = (encryptedHex, ivHex, authTagHex, password) => {
         
         return decrypted;
     } catch (e) {
-        // e.message will typically be 'Unsupported state or unable to authenticate data' for a wrong password in GCM mode.
+        console.error("[VAULT ERROR] Decryption Authentication Failed. Invalid password or corrupted data. Original error:", e.message);
         throw new Error('Authentication Failed. Invalid password or corrupted data.');
     }
 };

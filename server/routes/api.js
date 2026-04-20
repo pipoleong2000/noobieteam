@@ -156,37 +156,19 @@ router.post('/users', async (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
+router.put('/users/pin', async (req, res) => {
+    try {
+        const { email, pin } = req.body;
+        const hash = crypto.createHash('sha256').update(pin).digest('hex');
+        const user = await User.findOneAndUpdate({ email }, { vaultPin: hash }, { new: true });
+        res.json(user);
+    } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
 router.put('/users/:email', async (req, res) => {
     try {
       const user = await User.findOneAndUpdate({ email: req.params.email }, req.body, { new: true });
       res.json(user);
-    } catch(e) { res.status(500).json({ error: e.message }); }
-});
-
-
-
-// --- Docs ---
-router.get('/workspaces/:wsId/docs', async (req, res) => {
-  try {
-    const docs = await Doc.find({ workspaceId: req.params.wsId }).sort({ order: 1 });
-    res.json(docs);
-  } catch (e) {
-    console.error("Fetch Docs Error:", e);
-    res.status(500).json({ error: e.message });
-  }
-});
-
-router.put('/users/pin', async (req, res) => {
-    try {
-        const { email, pin } = req.body;
-        // In a real app, hash this. For Noobieteam we hash via frontend or backend.
-        // The prompt says "hash this PIN on the user's profile".
-        
-        // We hash the PIN so the backend doesn't store plaintext, and this hash IS the encryption key.
-        
-        const hash = crypto.createHash('sha256').update(pin).digest('hex');
-        const user = await User.findOneAndUpdate({ email }, { vaultPin: hash }, { new: true });
-        res.json(user);
     } catch(e) { res.status(500).json({ error: e.message }); }
 });
 

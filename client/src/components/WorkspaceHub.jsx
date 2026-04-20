@@ -3,9 +3,38 @@ window.WorkspaceHub = ({ onSelect, onLogout, user, theme, onThemeChange, onUpdat
             const { showToast } = window.useToasts();
             const [workspaces, setWorkspaces] = React.useState([]);
             const [loading, setLoading] = React.useState(true);
+            const [pinPrompt, setPinPrompt] = React.useState({ isOpen: false, pin: '', confirm: '' });
+            const [pinError, setPinError] = React.useState('');
+            const [pinLoading, setPinLoading] = React.useState(false);
 
             React.useEffect(() => {
-                fetch('/api/workspaces').then(r => r.json()).then(ws => { setWorkspaces(ws); setLoading(false); }).catch(console.error);
+                if (user?.method === 'google' && !user?.vaultPin) {
+                    setPinPrompt({ isOpen: true, pin: '', confirm: '' });
+                }
+            }, [user]);
+
+            const handleCreatePin = async (e) => {
+                e.preventDefault();
+                if (pinPrompt.pin !== pinPrompt.confirm) return setPinError('PINs do not match.');
+                if (pinPrompt.pin.length < 6) return setPinError('PIN must be at least 6 characters.');
+                setPinLoading(true);
+                try {
+                    const res = await fetch('/api/users/pin', { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ email: user.email, pin: pinPrompt.pin }) });
+                    if (!res.ok) throw new Error('Failed to save PIN.');
+                    const data = await res.json();
+                    onUpdateUser({ ...user, vaultPin: data.vaultPin });
+                    showToast('Master Vault PIN created successfully. 🔐');
+                    setPinPrompt({ isOpen: false, pin: '', confirm: '' });
+                } catch (err) {
+                    setPinError(err.message);
+                } finally {
+                    setPinLoading(false);
+                }
+            };
+
+
+            React.useEffect(() => {
+                fetch('/api/workspaces').then(r => r.json()).then(ws => { setWorkspaces(Array.isArray(ws) ? ws : []); setLoading(false); }).catch(err => { console.error(err); setWorkspaces([]); setLoading(false); });
             }, []);
 
             // No longer save to localStorage, only API calls
@@ -51,7 +80,7 @@ window.WorkspaceHub = ({ onSelect, onLogout, user, theme, onThemeChange, onUpdat
             const isDarkHeader = ['dark', 'darkblue', 'green', 'ocean'].includes(theme);
 
             const displayWorkspaces = React.useMemo(() => {
-                let filtered = workspaces;
+                let filtered = Array.isArray(workspaces) ? workspaces : [];
                 if (!isAdmin) {
                     filtered = filtered.filter(w => {
                         const memberEmails = w.members ? w.members.map(m => m.userId) : [];
@@ -63,6 +92,23 @@ window.WorkspaceHub = ({ onSelect, onLogout, user, theme, onThemeChange, onUpdat
 
             return (
                 <div className="min-h-screen bg-white animate-fade-in relative flex flex-col text-black">
+                {pinPrompt.isOpen && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-xl z-[9999] flex items-center justify-center p-4 animate-fade-in">
+                    <div className="max-w-[320px] w-full bg-white p-8 rounded-[2rem] shadow-2xl text-center">
+                        <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-6"><window.Icon name="shield-alert" size={32} className="text-blue-500" /></div>
+                        <h2 className="text-2xl font-black italic tracking-tighter mb-2">Vault Security</h2>
+                        <p className="text-[10px] text-gray-500 mb-6">Since you logged in with Google, you must create a Master PIN to securely encrypt your Vault secrets. Minimum 6 characters.</p>
+                        <form onSubmit={handleCreatePin} className="space-y-4">
+                            <input className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-xs outline-none focus:ring-1 focus:ring-blue-400 text-black font-black" type="password" placeholder="Enter PIN" autoFocus required value={pinPrompt.pin} onChange={e => { setPinPrompt(p => ({ ...p, pin: e.target.value })); setPinError(''); }} />
+                            <input className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-xs outline-none focus:ring-1 focus:ring-blue-400 text-black font-black" type="password" placeholder="Confirm PIN" required value={pinPrompt.confirm} onChange={e => { setPinPrompt(p => ({ ...p, confirm: e.target.value })); setPinError(''); }} />
+                            <button disabled={pinLoading} className="w-full py-3 bg-blue-500 text-white rounded-xl text-xs font-bold shadow-lg shadow-blue-100 hover:scale-105 active:scale-95 transition disabled:opacity-50 flex items-center justify-center gap-2">
+                                {pinLoading && <window.Icon name="loader" size={14} className="animate-spin" />} Create Vault PIN
+                            </button>
+                            {pinError && <p className="text-red-500 text-[10px] font-bold animate-shake">{pinError}</p>}
+                        </form>
+                    </div>
+                </div>
+            )}
                     <nav className={`h-16 px-6 lg:px-12 flex items-center justify-between transition-colors duration-500 shadow-sm ${headerClass}`}>
                         <h1 className={`text-xl font-black italic tracking-tighter ${isDarkHeader ? 'text-white' : 'text-black'}`}>Noobieteam</h1>
                         <window.ProfileMenu user={user} onLogout={onLogout} onThemeChange={onThemeChange} currentTheme={theme} onUpdateUser={onUpdateUser} />

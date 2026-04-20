@@ -642,7 +642,7 @@ window.WorkspaceView = ({ workspace, onBack, user, onLogout, onThemeChange, them
                         </div>
                     </>
                 ) : (
-                    <button onClick={() => setIsAIChatOpen(true)} className="w-full h-fit max-h-full flex items-center justify-center text-white hover:scale-110 transition"><window.Icon name="message-square" size={24} /></button>
+                    <button onClick={() => setIsAIChatOpen(true)} className="w-full h-full flex items-center justify-center text-white hover:scale-110 transition p-0 m-0"><window.Icon name="message-square" size={24} /></button>
                 )}
             </div>
 
