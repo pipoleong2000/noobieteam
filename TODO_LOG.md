@@ -55,3 +55,11 @@
 - **Task:** Verify the Programmer's squashed commit for the Vault PIN syntax fix and API verification, ensure `.env` and `mongodb_data/` were not staged, and push the patch to remote.
 - **Status:** Completed.
 - **Outcome:** I audited the Git staging area (`git status`) and confirmed that sensitive environment files and MongoDB databases were safely ignored. The Programmer successfully squashed the Vault UI/API patches into a single, clean commit. Due to the intentional Git history rewrite (`git reset --soft`), I executed a secure `git push origin main --force-with-lease` to deploy the unified hotfix to `https://github.com/dpentajeu/noobieteam/`. The remote is now perfectly synced with our production-ready, working codebase.
+
+## 2026-04-21 UI/UX Updates for Expired Cards Intervention
+- **Action:** Added Section 17 to `ui_specs_update_v2.md` to define the new 'Expired Cards Intervention' modal.
+- **Specs Added:** 
+  1. Set the trigger condition to evaluate the board once per session for any cards overdue by more than 3 days.
+  2. Designed a high-attention, red-tinted glassmorphism modal displaying the list of severely expired tasks.
+  3. Defined three explicit action buttons in the footer: 'Archive All' (red button), 'Move All To' (dropdown + button), and 'Do Nothing' (ghost button).
+- **Outcome:** The UX flow for proactive workspace management is fully mapped out. Handed off to the Programmer and CTO for implementation.
