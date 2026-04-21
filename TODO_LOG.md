@@ -34,3 +34,21 @@
 - **Task:** Verify the frontend logic after the Programmer's updates to `DocTab.jsx` and ensure no corrupted `.vite` cache causes workspace crashes.
 - **Status:** Completed.
 - **Outcome:** I forcefully wiped any residual `node_modules/.cache` and `node_modules/.vite` artifacts to guarantee that the `window.PublicDocsView` component (which handles dynamic read-only postman pages) binds cleanly to the `App.jsx` router. The server was cleanly spun down and rebooted on dynamic port 9501. The Kanban workspace, the Vault, and the new Documentation Module tab (complete with hierarchical folder support) load effortlessly without any React explosions.
+
+## 2026-04-21 UI/UX Specs for Jira-Style Backlog Module
+- **Action:** Created `BACKLOG_UX_SPECS.md` detailing the design for the new Backlog feature.
+- **Specs Added:** 
+  1. Defined the high-density vertical list view (rows instead of cards) to manage unprioritized tasks.
+  2. Specified the integration method: a Side Drawer or Dual-Pane view to allow simultaneous visibility with the active Kanban board.
+  3. Detailed the core drag-and-drop interaction flow: users can drag rows directly from the Backlog into the 'To Do' column of the active board.
+- **Outcome:** The UX blueprints for the Backlog are complete. Handed off to the CTO and Programmer for frontend implementation and potential schema updates.
+
+## 2026-04-21 Dynamic Docs & Jukebox State Final Verification (Tester)
+- **Project:** Noobieteam
+- **Task:** Verify the removal of debug alerts, the functionality of name-based lookups for the Dynamic Docs page, and the default minimized state of the Jukebox.
+- **Status:** Completed.
+- **Outcome:**
+  1.  **Dynamic Docs Verification:** Successfully executed a full end-to-end test using unique workspace names and folder slugs. Confirmed that the backend now correctly handles name-based lookups (bypassing the Mongoose 12-char CastError bug) and serves documentation content flawlessly at the public URL.
+  2.  **Jukebox UX Verification:** Confirmed that the `FloatingJukebox` state in `App.jsx` is now set to `isMinimized: true` by default, ensuring a cleaner workspace entry experience for users.
+  3.  **DocTab Button Cleanliness:** Verified that all `window.alert` debug hooks have been removed from the 'New Folder', 'New Document', and 'New API Endpoint' action buttons in `DocTab.jsx`.
+- **Result:** All pending hotfixes for the Docs module and Jukebox are verified as 100% operational.
