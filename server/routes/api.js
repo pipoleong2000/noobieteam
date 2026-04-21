@@ -166,8 +166,26 @@ router.post('/auth/google', async (req, res) => {
 router.post('/auth/login', async (req, res) => {
     try {
         const { email, password } = req.body;
-        const user = await User.findOne({ email, password });
+        const user = await User.findOne({ email });
+        
         if (!user) return res.status(401).json({ error: 'Credentials mismatch' });
+        
+        let isMatch = false;
+        
+        // 1. Direct plaintext fallback (legacy support for test accounts)
+        if (user.password === password) {
+            isMatch = true;
+        } else {
+            // 2. Secure bcrypt comparison (modern accounts)
+            const bcrypt = require('bcrypt');
+            try {
+                isMatch = await bcrypt.compare(password, user.password);
+            } catch(err) {
+                // Not a valid bcrypt hash, fallback fails
+            }
+        }
+        
+        if (!isMatch) return res.status(401).json({ error: 'Credentials mismatch' });
         
         user.lastLogin = new Date();
         await user.save();
@@ -186,7 +204,14 @@ router.post('/users', async (req, res) => {
   try {
     const existing = await User.findOne({ email: req.body.email });
     if (existing) return res.status(400).json({ error: 'User exists' });
-    const user = new User(req.body);
+    
+    const bcrypt = require('bcrypt');
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(req.body.password, salt);
+    
+    const userData = { ...req.body, password: hashedPassword };
+    const user = new User(userData);
+    
     await user.save();
     res.json(user);
   } catch(e) { res.status(500).json({ error: e.message }); }
