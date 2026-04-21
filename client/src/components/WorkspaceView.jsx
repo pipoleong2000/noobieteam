@@ -95,6 +95,7 @@ window.WorkspaceView = ({ workspace, onBack, user, onLogout, onThemeChange, them
     }, []);
     const [isAIChatOpen, setIsAIChatOpen] = React.useState(false);
     const [viewArchivedCol, setViewArchivedCol] = React.useState(null);
+    const [showBacklog, setShowBacklog] = React.useState(false);
     
     // Safety check for Drag and Drop library
     const dnd = window.ReactBeautifulDnd;
@@ -522,7 +523,9 @@ window.WorkspaceView = ({ workspace, onBack, user, onLogout, onThemeChange, them
                                 </button>
                             </div>
                         </div>
+                        <button onClick={() => setShowBacklog(!showBacklog)} className={`px-6 py-4 rounded-full text-[9px] font-black uppercase tracking-widest shadow-xl active:scale-95 transition flex items-center gap-2 ${showBacklog ? 'bg-blue-100 text-blue-700' : 'bg-white text-gray-700 border border-gray-200'}`}><window.Icon name="list" size={14} /> Backlog</button>
                         <button onClick={() => showPrompt('New Stage', 'Stage name:', async (name) => { if(name) { const newCols = [...columns, { id: window.generateId('col'), title: name }]; await fetch(`/api/workspaces/${workspace.id}`, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ columns: newCols }) }); setColumns(newCols); } })} className="bg-black text-white px-8 py-4 rounded-full text-[9px] font-black uppercase tracking-widest shadow-xl active:scale-95 transition flex-shrink-0">New Stage</button>
+                    </div>
                     </header>
                     <dnd.DragDropContext onDragEnd={async (result) => {
                                 if (!result.destination) return;
@@ -556,9 +559,53 @@ window.WorkspaceView = ({ workspace, onBack, user, onLogout, onThemeChange, them
                                 setCards(newCards);
                                 await fetch(`/api/tasks/${draggableId}`, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ columnId: destination.droppableId, auditEvent: { user: user?.email || 'System', action: 'Moved card to ' + destination.droppableId } }) });
                             }}>
-                            <dnd.Droppable droppableId="all-columns" direction="horizontal" type="COLUMN">
+                            <div className="flex gap-6 flex-1 overflow-hidden h-full">
+                        {showBacklog && (
+                            <div className="w-80 flex-shrink-0 bg-gray-50 border border-gray-200 rounded-[2rem] flex flex-col h-full animate-fade-in">
+                                <div className="p-4 border-b border-gray-200 flex justify-between items-center bg-gray-100/50 rounded-t-[2rem]">
+                                    <h3 className="text-sm font-black uppercase tracking-widest text-gray-700 flex items-center gap-2">
+                                        <window.Icon name="list" size={16} className="text-gray-500" />
+                                        Backlog
+                                    </h3>
+                                    <div className="flex gap-1 opacity-50 hover:opacity-100 transition">
+                                        <button onClick={() => setShowBacklog(false)} className="p-1 hover:bg-gray-200 rounded"><window.Icon name="x" size={14}/></button>
+                                    </div>
+                                </div>
+                                <dnd.Droppable droppableId="backlog">
+                                    {(provided) => (
+                                        <div ref={provided.innerRef} {...provided.droppableProps} className="flex-1 overflow-y-auto no-scrollbar p-3 space-y-2 min-h-[100px]">
+                                            {displayCards.filter(c => c && (c.columnId === 'backlog' || c.col === 'backlog')).map((card, idx) => (
+                                                <dnd.Draggable key={card.id || card._id} draggableId={card.id || card._id} index={idx}>
+                                                    {(dragProvided, snapshot) => (
+                                                        <div ref={dragProvided.innerRef} {...dragProvided.draggableProps} {...dragProvided.dragHandleProps} onClick={() => setEditingCard(card)} className={`bg-white border border-gray-100 rounded-xl p-3 shadow-sm hover:shadow-md transition cursor-pointer flex justify-between items-center group ${snapshot.isDragging ? 'rotate-2 scale-105 shadow-xl z-50' : ''}`}>
+                                                            <div className="flex flex-col gap-1 overflow-hidden pr-2">
+                                                                <span className="font-bold text-xs text-gray-800 truncate">{card.title}</span>
+                                                                <span className="text-[9px] font-black uppercase tracking-widest text-gray-400">
+                                                                    {card.dueDate ? new Date(card.dueDate).toLocaleDateString() : 'No Date'}
+                                                                </span>
+                                                            </div>
+                                                            <div className={`w-2 h-2 rounded-full flex-shrink-0 ${ {low: 'bg-blue-300', med: 'bg-yellow-400', high: 'bg-red-500'}[card.urgency?.toLowerCase() || 'low'] }`}></div>
+                                                        </div>
+                                                    )}
+                                                </dnd.Draggable>
+                                            ))}
+                                            {provided.placeholder}
+                                        </div>
+                                    )}
+                                </dnd.Droppable>
+                                <div className="p-3 border-t border-gray-200 bg-gray-100/50 rounded-b-[2rem]">
+                                    <button onClick={() => { 
+                                        const nc = { columnId: 'backlog', title: 'New Backlog Item', urgency: 'LOW', assignees: [user?.email], auditEvent: { user: user?.email || 'System', action: 'Created backlog card' } };
+                                        fetch(`/api/workspaces/${workspace.id}/tasks`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(nc) }).then(r=>r.json()).then(task => { const resId = task.id || task._id; const finalTask = { ...task, id: resId }; setCards(prev => [...prev, finalTask]); setEditingCard(finalTask); }); 
+                                    }} className="w-full py-2 bg-white border border-gray-200 text-gray-600 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-gray-50 transition shadow-sm flex items-center justify-center gap-2">
+                                        <window.Icon name="plus" size={14} /> Add to Backlog
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                        <dnd.Droppable droppableId="all-columns" direction="horizontal" type="COLUMN">
                         {(providedBoard) => (
-                            <div className="flex gap-10 flex-1 items-start" {...providedBoard.droppableProps} ref={providedBoard.innerRef}>
+                            <div className="flex gap-10 flex-1 items-start h-full overflow-x-auto no-scrollbar" {...providedBoard.droppableProps} ref={providedBoard.innerRef}>
                                 {columns.map((col, index) => (
                                     <dnd.Draggable key={col.id} draggableId={col.id} index={index}>
                                         {(providedCol) => (
@@ -619,6 +666,7 @@ window.WorkspaceView = ({ workspace, onBack, user, onLogout, onThemeChange, them
                             </div>
                         )}
                     </dnd.Droppable>
+                    </div>
                     </dnd.DragDropContext>
                 </main>
             ) : tab === 'vault' ? <window.VaultTab workspace={workspace} user={user} onUpdate={updateWorkspace} onUpdateUser={onUpdateUser} /> : tab === 'docs' ? <window.DocTab workspaceId={workspace?.id || workspace?._id} user={user} /> : null}
