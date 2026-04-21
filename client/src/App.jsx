@@ -233,7 +233,7 @@ window.PublicDocsView = ({ wsPath, folderName }) => {
             return;
         }
 
-        fetch(\`/api/public/docs/\${wsPath}/\${folderName}\`)
+        fetch(`/api/public/docs/${wsPath}/${folderName}`)
             .then(r => {
                 if (!r.ok) throw new Error("Documentation not found or access denied.");
                 return r.json();
@@ -270,9 +270,9 @@ window.PublicDocsView = ({ wsPath, folderName }) => {
                     {docs.map(doc => {
                         const docId = doc.id || doc._id;
                         return (
-                            <div key={docId} onClick={() => setSelectedDocId(docId)} className={\`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition \${selectedDocId === docId ? 'bg-white shadow-sm text-blue-600 font-bold border border-gray-200' : 'hover:bg-gray-100 text-gray-600 font-medium border border-transparent'}\`}>
+                            <div key={docId} onClick={() => setSelectedDocId(docId)} className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition ${selectedDocId === docId ? 'bg-white shadow-sm text-blue-600 font-bold border border-gray-200' : 'hover:bg-gray-100 text-gray-600 font-medium border border-transparent'}`}>
                                 {doc.type === 'API' ? (
-                                    <span className={\`text-[9px] font-black w-10 text-center rounded px-1 py-0.5 \${doc.apiSpec?.method === 'POST' ? 'bg-emerald-100 text-emerald-700' : doc.apiSpec?.method === 'GET' ? 'bg-blue-100 text-blue-700' : doc.apiSpec?.method === 'PUT' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}\`}>{doc.apiSpec?.method}</span>
+                                    <span className={`text-[9px] font-black w-10 text-center rounded px-1 py-0.5 ${doc.apiSpec?.method === 'POST' ? 'bg-emerald-100 text-emerald-700' : doc.apiSpec?.method === 'GET' ? 'bg-blue-100 text-blue-700' : doc.apiSpec?.method === 'PUT' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}`}>{doc.apiSpec?.method}</span>
                                 ) : (
                                     <window.Icon name="file-text" size={16} className={selectedDocId === docId ? 'text-blue-500' : 'text-gray-400'} />
                                 )}
@@ -293,7 +293,7 @@ window.PublicDocsView = ({ wsPath, folderName }) => {
                         activeDoc.type === 'API' ? (
                             <div className="max-w-4xl mx-auto space-y-8 animate-fade-in">
                                 <div className="flex items-center gap-4 p-4 bg-gray-50 border border-gray-200 rounded-2xl">
-                                    <span className={\`font-black px-3 py-1 rounded-lg text-xs \${activeDoc.apiSpec?.method === 'POST' ? 'bg-emerald-100 text-emerald-700' : activeDoc.apiSpec?.method === 'GET' ? 'bg-blue-100 text-blue-700' : activeDoc.apiSpec?.method === 'PUT' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}\`}>{activeDoc.apiSpec?.method}</span>
+                                    <span className={`font-black px-3 py-1 rounded-lg text-xs ${activeDoc.apiSpec?.method === 'POST' ? 'bg-emerald-100 text-emerald-700' : activeDoc.apiSpec?.method === 'GET' ? 'bg-blue-100 text-blue-700' : activeDoc.apiSpec?.method === 'PUT' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}`}>{activeDoc.apiSpec?.method}</span>
                                     <code className="text-sm font-bold text-gray-800">{activeDoc.apiSpec?.url || 'No URL specified'}</code>
                                 </div>
                                 {activeDoc.content && (
