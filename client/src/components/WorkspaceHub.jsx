@@ -14,15 +14,30 @@ window.WorkspaceHub = ({ onSelect, onLogout, user, theme, onThemeChange, onUpdat
             }, [user]);
 
             const handleCreatePin = async (e) => {
-                e.preventDefault();
+                if (e && e.preventDefault) e.preventDefault();
                 if (pinPrompt.pin !== pinPrompt.confirm) return setPinError('PINs do not match.');
                 if (pinPrompt.pin.length < 6) return setPinError('PIN must be at least 6 characters.');
                 setPinLoading(true);
                 try {
-                    const res = await fetch('/api/users/pin', { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ email: user.email, pin: pinPrompt.pin }) });
-                    if (!res.ok) throw new Error('Failed to save PIN.');
+                    const userEmail = user?.email;
+                    if (!userEmail) throw new Error('User context missing. Please re-login.');
+
+                    const res = await fetch('/api/users/pin', { 
+                        method: 'PUT', 
+                        headers: {'Content-Type': 'application/json'}, 
+                        body: JSON.stringify({ email: userEmail, pin: pinPrompt.pin }) 
+                    });
+                    
                     const data = await res.json();
-                    onUpdateUser({ ...user, vaultPin: data.vaultPin });
+                    if (!res.ok) throw new Error(data.error || 'Failed to save PIN.');
+
+                    if (!data || !data.vaultPin) {
+                        console.error("Vault PIN verification failed. Payload:", data);
+                        throw new Error('Server successfully saved PIN but returned malformed verification data.');
+                    }
+                    
+                    const updatedUser = Object.assign({}, user || {}, { vaultPin: data.vaultPin });
+                    onUpdateUser(updatedUser);
                     showToast('Master Vault PIN created successfully. 🔐');
                     setPinPrompt({ isOpen: false, pin: '', confirm: '' });
                 } catch (err) {
@@ -98,14 +113,14 @@ window.WorkspaceHub = ({ onSelect, onLogout, user, theme, onThemeChange, onUpdat
                         <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-6"><window.Icon name="shield-alert" size={32} className="text-blue-500" /></div>
                         <h2 className="text-2xl font-black italic tracking-tighter mb-2">Vault Security</h2>
                         <p className="text-[10px] text-gray-500 mb-6">Since you logged in with Google, you must create a Master PIN to securely encrypt your Vault secrets. Minimum 6 characters.</p>
-                        <form onSubmit={handleCreatePin} className="space-y-4">
-                            <input className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-xs outline-none focus:ring-1 focus:ring-blue-400 text-black font-black" type="password" placeholder="Enter PIN" autoFocus required value={pinPrompt.pin} onChange={e => { setPinPrompt(p => ({ ...p, pin: e.target.value })); setPinError(''); }} />
-                            <input className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-xs outline-none focus:ring-1 focus:ring-blue-400 text-black font-black" type="password" placeholder="Confirm PIN" required value={pinPrompt.confirm} onChange={e => { setPinPrompt(p => ({ ...p, confirm: e.target.value })); setPinError(''); }} />
-                            <button disabled={pinLoading} className="w-full py-3 bg-blue-500 text-white rounded-xl text-xs font-bold shadow-lg shadow-blue-100 hover:scale-105 active:scale-95 transition disabled:opacity-50 flex items-center justify-center gap-2">
+                        <div className="space-y-4">
+                            <input className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-xs outline-none focus:ring-1 focus:ring-blue-400 text-black font-black" type="password" placeholder="Enter PIN" autoFocus required value={pinPrompt.pin} onChange={e => { setPinPrompt(p => ({ ...p, pin: e.target.value })); setPinError(''); }} onKeyDown={e => e.key === 'Enter' && handleCreatePin(e)} />
+                            <input className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-xs outline-none focus:ring-1 focus:ring-blue-400 text-black font-black" type="password" placeholder="Confirm PIN" required value={pinPrompt.confirm} onChange={e => { setPinPrompt(p => ({ ...p, confirm: e.target.value })); setPinError(''); }} onKeyDown={e => e.key === 'Enter' && handleCreatePin(e)} />
+                            <button type="button" onClick={handleCreatePin} disabled={pinLoading} className="w-full py-3 bg-blue-500 text-white rounded-xl text-xs font-bold shadow-lg shadow-blue-100 hover:scale-105 active:scale-95 transition disabled:opacity-50 flex items-center justify-center gap-2">
                                 {pinLoading && <window.Icon name="loader" size={14} className="animate-spin" />} Create Vault PIN
                             </button>
                             {pinError && <p className="text-red-500 text-[10px] font-bold animate-shake">{pinError}</p>}
-                        </form>
+                        </div>
                     </div>
                 </div>
             )}

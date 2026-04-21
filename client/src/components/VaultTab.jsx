@@ -1,4 +1,4 @@
-window.VaultTab = ({ workspace, user, onUpdate }) => {
+window.VaultTab = function({ workspace, user, onUpdate, onUpdateUser }) {
     const { showPrompt, showAlert, showConfirm } = window.useModals();
     const { showToast } = window.useToasts();
     const [secrets, setSecrets] = React.useState(workspace.secrets || []);
@@ -6,15 +6,19 @@ window.VaultTab = ({ workspace, user, onUpdate }) => {
     const [isAdding, setIsAdding] = React.useState(false);
     const [revealData, setRevealData] = React.useState(null);
 
-    const addSecret = async () => {
+    const addSecret = async function() {
         if (!newSecret.service || !newSecret.account || !newSecret.password) return showAlert('Please fill all fields.', 'Missing Intel');
         try {
-            const res = await fetch(`/api/workspaces/${workspace.id}/vault/encrypt`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ text: JSON.stringify(newSecret), password: user?.password || user?.vaultPin }) });
+            const res = await fetch('/api/workspaces/' + workspace.id + '/vault/encrypt', { 
+                method: 'POST', 
+                headers: {'Content-Type': 'application/json'}, 
+                body: JSON.stringify({ text: JSON.stringify(newSecret), password: user?.password || user?.vaultPin }) 
+            });
             if (!res.ok) throw new Error('Encryption failed');
             const data = await res.json();
             const encrypted = data.encrypted;
             
-            const updatedSecrets = [...secrets, { id: window.generateId('sec'), service: newSecret.service, value: encrypted }];
+            const updatedSecrets = secrets.concat([{ id: window.generateId('sec'), service: newSecret.service, value: encrypted }]);
             
             await onUpdate({ secrets: updatedSecrets });
             
@@ -34,16 +38,32 @@ window.VaultTab = ({ workspace, user, onUpdate }) => {
     const [pinError, setPinError] = React.useState('');
     const [pinLoading, setPinLoading] = React.useState(false);
 
-    const handleCreatePin = async (e) => {
-        e.preventDefault();
+    const handleCreatePin = async function(e) {
+        if (e && e.preventDefault) e.preventDefault();
         if (pinPrompt.pin !== pinPrompt.confirm) return setPinError('PINs do not match.');
         if (pinPrompt.pin.length < 6) return setPinError('PIN must be at least 6 characters.');
         setPinLoading(true);
         try {
-            const res = await fetch('/api/users/pin', { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ email: user.email, pin: pinPrompt.pin }) });
-            if (!res.ok) throw new Error('Failed to save PIN.');
+            const userEmail = user?.email;
+            if (!userEmail) throw new Error('User context missing. Please re-login.');
+            
+            const res = await fetch('/api/users/pin', { 
+                method: 'PUT', 
+                headers: {'Content-Type': 'application/json'}, 
+                body: JSON.stringify({ email: userEmail, pin: pinPrompt.pin }) 
+            });
+            
             const data = await res.json();
-            onUpdateUser({ ...user, vaultPin: data.vaultPin });
+            if (!res.ok) throw new Error(data.error || 'Failed to save PIN.');
+            
+            if (!data || !data.vaultPin) {
+                console.error("Vault PIN verification failed. Payload:", data);
+                throw new Error('PIN saved but verification payload is malformed.');
+            }
+            
+            const updatedUser = Object.assign({}, user || {}, { vaultPin: data.vaultPin });
+            onUpdateUser(updatedUser);
+            
             showToast('Master Vault PIN created successfully. 🔐');
             setPinPrompt({ isOpen: false, pin: '', confirm: '' });
         } catch (err) {
@@ -53,27 +73,31 @@ window.VaultTab = ({ workspace, user, onUpdate }) => {
         }
     };
 
-    const handleReveal = (id) => {
+    const handleReveal = function(id) {
         if (user?.method === 'google' && !user?.vaultPin) {
             setPinPrompt({ isOpen: true, pin: '', confirm: '' });
             return;
         }
-        setRevealPrompt({ isOpen: true, id, pass: '' });
+        setRevealPrompt({ isOpen: true, id: id, pass: '' });
         setRevealError('');
     };
 
-    const processReveal = async () => {
+    const processReveal = async function() {
         if (!revealPrompt.pass) return;
         setRevealLoading(true);
         setRevealError('');
         try {
             const s = secrets.find(x => (x.id === revealPrompt.id || x._id === revealPrompt.id));
             const payloadPass = user?.method === 'google' ? await window.inHouseHash(revealPrompt.pass) : revealPrompt.pass;
-            const res = await fetch(`/api/workspaces/${workspace.id}/vault/decrypt`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ cipherBase64: s.value, password: payloadPass }) });
+            const res = await fetch('/api/workspaces/' + workspace.id + '/vault/decrypt', { 
+                method: 'POST', 
+                headers: {'Content-Type':'application/json'}, 
+                body: JSON.stringify({ cipherBase64: s.value, password: payloadPass }) 
+            });
             
             if (res.status === 401) {
                 setRevealError('Incorrect password. Unable to decrypt secret.');
-                setRevealPrompt({ ...revealPrompt, pass: '' }); // Clear input field
+                setRevealPrompt(Object.assign({}, revealPrompt, { pass: '' }));
                 setRevealLoading(false);
                 return;
             }
@@ -84,7 +108,7 @@ window.VaultTab = ({ workspace, user, onUpdate }) => {
             
             try {
                 const parsed = JSON.parse(dec);
-                setRevealData({ ...parsed, service: s.service });
+                setRevealData(Object.assign({}, parsed, { service: s.service }));
                 setRevealPrompt({ isOpen: false, id: null, pass: '' });
             } catch (e) {
                 setRevealData({ service: s.service, account: 'Data Error', password: dec });
@@ -92,19 +116,19 @@ window.VaultTab = ({ workspace, user, onUpdate }) => {
             }
         } catch (err) {
             setRevealError(err.message || 'Vault Error');
-            setRevealPrompt({ ...revealPrompt, pass: '' });
+            setRevealPrompt(Object.assign({}, revealPrompt, { pass: '' }));
         }
         setRevealLoading(false);
     };
 
-    const deleteSecret = async (id) => {
+    const deleteSecret = async function(id) {
         const updatedSecrets = secrets.filter(x => (x.id !== id && x._id !== id));
         await onUpdate({ secrets: updatedSecrets });
         setSecrets(updatedSecrets);
         showToast("Secret purged.");
     };
 
-    const copyToClipboard = (text) => {
+    const copyToClipboard = function(text) {
         if (navigator.clipboard && window.isSecureContext) {
             navigator.clipboard.writeText(text);
         } else {
@@ -123,10 +147,29 @@ window.VaultTab = ({ workspace, user, onUpdate }) => {
             }
             textArea.remove();
         }
-        showToast("Copied to clipboard! 📋");
+        showToast("Copied to clipboard!");
     };
 
     return (
+        <window.React.Fragment>
+            {pinPrompt.isOpen && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-xl z-[9999] flex items-center justify-center p-4 animate-fade-in">
+                    <div className="max-w-[320px] w-full bg-white p-8 rounded-[2rem] shadow-2xl text-center">
+                        <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-6"><window.Icon name="shield-alert" size={32} className="text-blue-500" /></div>
+                        <h2 className="text-2xl font-black italic tracking-tighter mb-2">Vault Security</h2>
+                        <p className="text-[10px] text-gray-500 mb-6">Since you logged in with Google, you must create a Master PIN to securely encrypt your Vault secrets. Minimum 6 characters.</p>
+                        <div className="space-y-4">
+                            <input className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-xs outline-none focus:ring-1 focus:ring-blue-400 text-black font-black" type="password" placeholder="Enter PIN" autoFocus required value={pinPrompt.pin} onChange={e => { setPinPrompt(p => Object.assign({}, p, { pin: e.target.value })); setPinError(''); }} onKeyDown={e => e.key === 'Enter' && handleCreatePin(e)} />
+                            <input className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-xs outline-none focus:ring-1 focus:ring-blue-400 text-black font-black" type="password" placeholder="Confirm PIN" required value={pinPrompt.confirm} onChange={e => { setPinPrompt(p => Object.assign({}, p, { confirm: e.target.value })); setPinError(''); }} onKeyDown={e => e.key === 'Enter' && handleCreatePin(e)} />
+                            <button type="button" onClick={handleCreatePin} disabled={pinLoading} className="w-full py-3 bg-blue-500 text-white rounded-xl text-xs font-bold shadow-lg shadow-blue-100 hover:scale-105 active:scale-95 transition disabled:opacity-50 flex items-center justify-center gap-2">
+                                {pinLoading && <window.Icon name="loader" size={14} className="animate-spin" />} Create Vault PIN
+                            </button>
+                            {pinError && <p className="text-red-500 text-[10px] font-bold animate-shake">{pinError}</p>}
+                        </div>
+                    </div>
+                </div>
+            )}
+
         <div className="p-8 max-w-4xl mx-auto animate-fade-in pb-32">
             <header className="flex justify-between items-start mb-12">
                 <div><h2 className="text-4xl font-black mb-2 tracking-tighter">Project Vault</h2><p className="text-gray-400 text-[10px] font-bold uppercase tracking-[0.2em]">Encrypted Storage Center</p></div>
@@ -149,9 +192,9 @@ window.VaultTab = ({ workspace, user, onUpdate }) => {
             
             <window.GlobalModal isOpen={isAdding} onClose={() => setIsAdding(false)} title="Secure Data Archiving" footer={<button onClick={addSecret} className="bg-black text-white px-8 py-3 rounded-full text-[9px] font-black uppercase tracking-widest shadow-xl">Encrypt & Archive</button>}>
                 <div className="space-y-4">
-                    <input className="w-full p-4 bg-gray-50 rounded-xl border border-gray-100 outline-none text-[11px] font-bold" placeholder="Service Label (e.g. AWS)" value={newSecret.service} onChange={e => setNewSecret({...newSecret, service: e.target.value})} />
-                    <input className="w-full p-4 bg-gray-50 rounded-xl border border-gray-100 outline-none text-[11px] font-medium" placeholder="Account Identifier" value={newSecret.account} onChange={e => setNewSecret({...newSecret, account: e.target.value})} />
-                    <input className="w-full p-4 bg-gray-50 rounded-xl border border-gray-100 outline-none text-[11px] font-medium" type="password" placeholder="Access Key / Password" value={newSecret.password} onChange={e => setNewSecret({...newSecret, password: e.target.value})} />
+                    <input className="w-full p-4 bg-gray-50 rounded-xl border border-gray-100 outline-none text-[11px] font-bold" placeholder="Service Label (e.g. AWS)" value={newSecret.service} onChange={e => setNewSecret(Object.assign({}, newSecret, { service: e.target.value }))} />
+                    <input className="w-full p-4 bg-gray-50 rounded-xl border border-gray-100 outline-none text-[11px] font-medium" placeholder="Account Identifier" value={newSecret.account} onChange={e => setNewSecret(Object.assign({}, newSecret, { account: e.target.value }))} />
+                    <input className="w-full p-4 bg-gray-50 rounded-xl border border-gray-100 outline-none text-[11px] font-medium" type="password" placeholder="Access Key / Password" value={newSecret.password} onChange={e => setNewSecret(Object.assign({}, newSecret, { password: e.target.value }))} />
                 </div>
             </window.GlobalModal>
             <window.GlobalModal isOpen={revealPrompt.isOpen} onClose={() => setRevealPrompt({ isOpen: false, id: null, pass: '' })} title="Identity Verification" footer={
@@ -162,10 +205,10 @@ window.VaultTab = ({ workspace, user, onUpdate }) => {
                 <div className="space-y-2">
                     <p className="mb-2 font-bold text-gray-600 text-sm">Re-type your {user?.method === 'google' ? 'Master PIN' : 'Noobieteam password'} to decrypt.</p>
                     <input 
-                        className={`w-full p-4 bg-gray-50 rounded-2xl border-2 outline-none text-black transition font-black text-xs ${revealError ? 'border-red-500 animate-shake focus:border-red-500' : 'border-gray-100 focus:border-black'}`} 
+                        className={"w-full p-4 bg-gray-50 rounded-2xl border-2 outline-none text-black transition font-black text-xs " + (revealError ? "border-red-500 animate-shake focus:border-red-500" : "border-gray-100 focus:border-black")} 
                         type="password" 
                         value={revealPrompt.pass} 
-                        onChange={e => { setRevealPrompt({ ...revealPrompt, pass: e.target.value }); setRevealError(''); }} 
+                        onChange={e => { setRevealPrompt(Object.assign({}, revealPrompt, { pass: e.target.value })); setRevealError(''); }} 
                         autoFocus 
                         onKeyDown={e => e.key === 'Enter' && processReveal()} 
                         placeholder={user?.method === 'google' ? 'Master PIN' : 'Master Password'}
@@ -206,5 +249,6 @@ window.VaultTab = ({ workspace, user, onUpdate }) => {
                 )}
             </window.GlobalModal>
         </div>
+        </window.React.Fragment>
     );
 };

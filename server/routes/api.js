@@ -161,7 +161,8 @@ router.put('/users/pin', async (req, res) => {
         const { email, pin } = req.body;
         const hash = crypto.createHash('sha256').update(pin).digest('hex');
         const user = await User.findOneAndUpdate({ email }, { vaultPin: hash }, { new: true });
-        res.json(user);
+        if (!user) return res.status(404).json({ error: 'User not found' });
+        res.json({ success: true, vaultPin: user.vaultPin });
     } catch(e) { res.status(500).json({ error: e.message }); }
 });
 

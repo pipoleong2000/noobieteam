@@ -586,7 +586,7 @@ window.WorkspaceView = ({ workspace, onBack, user, onLogout, onThemeChange, them
                     </dnd.Droppable>
                     </dnd.DragDropContext>
                 </main>
-            ) : tab === 'vault' ? <window.VaultTab workspace={workspace} user={user} onUpdate={updateWorkspace} /> : tab === 'docs' ? <window.DocTab workspaceId={workspace?.id || workspace?._id} user={user} /> : null}
+            ) : tab === 'vault' ? <window.VaultTab workspace={workspace} user={user} onUpdate={updateWorkspace} onUpdateUser={onUpdateUser} /> : tab === 'docs' ? <window.DocTab workspaceId={workspace?.id || workspace?._id} user={user} /> : null}
             {editingCard && <window.CardModal card={editingCard} user={user} members={members} allUsers={allUsers} onClose={() => setEditingCard(null)} onSave={async (upd) => { const cardId = editingCard.id || editingCard._id; const res = await fetch(`/api/tasks/${cardId}`, { method: "PUT", headers: {"Content-Type":"application/json"}, body: JSON.stringify(upd) }); const updatedTask = await res.json(); setCards(prev => (prev || []).map(c => (c && (c.id === cardId || c._id === cardId)) ? updatedTask : c)); setEditingCard(null); }} onDelete={async (id) => { await fetch(`/api/tasks/${id}`, { method: "DELETE" }); setCards(prev => (prev || []).filter(c => c && (c.id !== id && c._id !== id))); setEditingCard(null); }} />}
             
             
