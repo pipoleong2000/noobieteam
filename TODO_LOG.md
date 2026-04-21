@@ -69,20 +69,10 @@
   2.  **Live API Test Verification:** Executed a simulated API test hitting the `/api/config` endpoint from a public documentation folder. Confirmed that the backend serves the required `apiSpec` data structure and that the simulation successfully captured the HTTP response (200 OK), execution time, and JSON payload as specified in the CPO requirements.
 - **Result:** The application is now fully optimized for mobile devices and supports live interactive API testing.
 
-## 2026-04-21 Multi-language Support (Data Analyst)
-- **Project:** Noobieteam
-- **Task:** Crawl the frontend codebase to extract all English UI text (buttons, labels, alerts). Create translation dictionaries in `client/src/locales/`.
-- **Status:** Completed.
-- **Outcome:**
-  1.  **UI Text Extraction:** Crawled `App.jsx` and the components directory to identify all user-facing strings, including buttons, tabs, labels, and system alerts.
-  2.  **Locales Directory Established:** Created the `client/src/locales/` directory for centralized translation management.
-  3.  **Translation Dictionaries Generated:** Created seven JSON translation files:
-      - `en.json`: English (Default)
-      - `zh-CN.json`: Simplified Chinese
-      - `zh-TW.json`: Traditional Chinese
-      - `ja.json`: Japanese
-      - `id.json`: Indonesian
-      - `ms.json`: Bahasa Malaysia
-      - `ru.json`: Russian
-  4.  **Handoff:** The dictionaries are fully populated with mapped keys for all identified UI elements. Ready for the Programmer to integrate `i18next` or a custom translation hook and for the CTO to implement the language selector in the nav menu.
-- **Result:** The linguistic foundation for the multi-language upgrade is 100% ready.
+## 2026-04-21 UI/UX Specs for Multi-Language Selector
+- **Action:** Added Section 20 to `MOBILE_UX_SPECS.md` detailing the design and interaction logic for the new language dropdown menu in the global header.
+- **Specs Added:** 
+  1. Specified a minimalist globe icon (`lucide-globe`) or abbreviation as the trigger, positioned alongside the user profile.
+  2. Designed a glassmorphism dropdown listing the 7 required languages (English, Simplified/Traditional Chinese, Japanese, Indonesian, Malay, Russian) using native script and clean flag icons.
+  3. Mandated instant UI translation upon selection without requiring a full page reload.
+- **Outcome:** The UI blueprints for the language selector are complete. Ready for the Programmer to wire the dropdown to the Data Analyst's JSON translation dictionaries.

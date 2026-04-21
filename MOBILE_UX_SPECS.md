@@ -23,3 +23,26 @@
     - **Action Button:** A prominent "Send Request" button (e.g., solid system blue).
     - **Response Output Area:** A dedicated, distinct box (e.g., dark background like `#1e1e1e`) displaying the real-time Response status code, execution time, and formatted JSON payload.
   - **Purpose:** This enables external developers viewing the public documentation page to execute live tests against the API on the spot, directly within the browser.
+
+## 20. Multi-Language Selector (Global Header)
+- **UX Concept:** A sleek, accessible dropdown menu to switch the application's active language, placed prominently in the global navigation bar.
+- **Location:** The main Workspace Hub header and individual Workspace headers, positioned alongside the User Profile and Settings icons.
+- **Trigger UI:** 
+  - A minimalist globe icon (e.g., `lucide-globe`) or the currently active language abbreviation (e.g., `EN`, `🌐`).
+  - Must blend perfectly with the active header theme (respecting the dynamic light/dark contrast rules for text/icons).
+- **Dropdown Menu:**
+  - Clicking the trigger opens a glassmorphism-styled dropdown (`backdrop-blur-md`, subtle borders).
+  - **Menu Items:** Each row represents a supported language, displaying:
+    1.  **Flag Icon/Emoji:** A clean, circular country flag or native emoji flag representation.
+    2.  **Native Name:** The language name written in its native script.
+  - **Hover State:** Subtle background highlight (`hover:bg-gray-100` or `hover:bg-white/10` for dark themes).
+  - **Active State:** The currently selected language must have a distinct visual indicator (e.g., a checkmark icon or bolder text weight).
+- **Supported Options:**
+  - English (Default) - `EN`
+  - Simplified Chinese (简体中文) - `ZH-CN`
+  - Traditional Chinese (繁體中文) - `ZH-TW`
+  - Japanese (日本語) - `JA`
+  - Indonesian (Bahasa Indonesia) - `ID`
+  - Bahasa Malaysia (Bahasa Melayu) - `MS`
+  - Russian (Русский) - `RU`
+- **Interaction Logic:** Selecting a language instantly triggers the translation hook, updating all UI elements (buttons, labels, placeholders, modals) without requiring a full page reload.
