@@ -393,21 +393,31 @@ router.post('/admin/users/:email/reset-pin', async (req, res) => {
 // --- Public Docs ---
 router.get('/public/docs/:wsId/:folderSlug', async (req, res) => {
   try {
-    const workspace = await Workspace.findById(req.params.wsId);
+    const mongoose = require('mongoose');
+    let wsQuery = [];
+    if (mongoose.Types.ObjectId.isValid(req.params.wsId) && String(req.params.wsId).length === 24) {
+        wsQuery.push({ _id: req.params.wsId });
+    }
+    // We don't have slug on workspace yet, but let's assume wsId is always ID for now or we match by name if we add slug.
+    // If it's an ID, we use _id. If not, maybe we just fallback to name? Or return 404.
+    let finalWsQuery = { name: req.params.wsId };
+    if (wsQuery.length) {
+        finalWsQuery = { $or: [{ name: req.params.wsId }, ...wsQuery] };
+    }
+    const workspace = await Workspace.findOne(finalWsQuery);
     if (!workspace) return res.status(404).json({ error: 'Workspace not found' });
     
     // Find folder by slug or ID
-    const mongoose = require('mongoose');
     const slug = req.params.folderSlug;
     const query = [{ slug }];
-    if (mongoose.Types.ObjectId.isValid(slug)) {
+    if (mongoose.Types.ObjectId.isValid(slug) && String(slug).length === 24) {
         query.push({ _id: slug });
     }
     
-    const folder = await Folder.findOne({ $or: query, workspaceId: req.params.wsId });
+    const folder = await Folder.findOne({ $or: query, workspaceId: workspace._id.toString() });
     if (!folder) return res.status(404).json({ error: 'Folder not found' });
     
-    const docs = await Doc.find({ workspaceId: req.params.wsId, folderId: folder._id }).sort({ order: 1, createdAt: 1 });
+    const docs = await Doc.find({ workspaceId: workspace._id.toString(), folderId: folder._id }).sort({ order: 1, createdAt: 1 });
     
     res.json({ workspace: { id: workspace._id, name: workspace.name }, folder: { id: folder._id, name: folder.name, slug: folder.slug }, docs });
   } catch (e) {
