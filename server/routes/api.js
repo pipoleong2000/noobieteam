@@ -397,7 +397,14 @@ router.get('/public/docs/:wsId/:folderSlug', async (req, res) => {
     if (!workspace) return res.status(404).json({ error: 'Workspace not found' });
     
     // Find folder by slug or ID
-    const folder = await Folder.findOne({ $or: [{ slug: req.params.folderSlug }, { _id: req.params.folderSlug }], workspaceId: req.params.wsId });
+    const mongoose = require('mongoose');
+    const slug = req.params.folderSlug;
+    const query = [{ slug }];
+    if (mongoose.Types.ObjectId.isValid(slug)) {
+        query.push({ _id: slug });
+    }
+    
+    const folder = await Folder.findOne({ $or: query, workspaceId: req.params.wsId });
     if (!folder) return res.status(404).json({ error: 'Folder not found' });
     
     const docs = await Doc.find({ workspaceId: req.params.wsId, folderId: folder._id }).sort({ order: 1, createdAt: 1 });

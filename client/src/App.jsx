@@ -350,7 +350,7 @@ window.Main = () => {
     const [user, setUser] = React.useState(() => window.safeParse('nt_user', null));
     const [ws, setWs] = React.useState(null);
     const [theme, setTheme] = React.useState(() => localStorage.getItem('nt_theme') || 'default');
-    const [player, setPlayer] = React.useState({ url: '', isMinimized: false });
+    const [player, setPlayer] = React.useState({ url: '', isMinimized: true });
     const [toasts, setToasts] = React.useState([]);
     const [modalState, setModalState] = React.useState({ isOpen: false, type: 'alert', title: '', message: '', callback: null, promptValue: '', isPassword: false });
 
@@ -367,7 +367,10 @@ window.Main = () => {
 
     const showAlert = (message, title = 'System Log') => setModalState({ isOpen: true, type: 'alert', title, message, callback: null });
     const showConfirm = (title, message, callback) => setModalState({ isOpen: true, type: 'confirm', title, message, callback });
-    const showPrompt = (title, message, callback, isPassword = false) => setModalState({ isOpen: true, type: 'prompt', title, message, callback, promptValue: '', isPassword });
+    const showPrompt = (title, message, callback, isPassword = false) => {
+        console.log('DEBUG: showPrompt called', { title, message });
+        setModalState({ isOpen: true, type: 'prompt', title, message, callback, promptValue: '', isPassword });
+    };
 
     const path = window.location.pathname;
     const isPublicDocs = path.startsWith('/docs/');
@@ -392,6 +395,7 @@ window.Main = () => {
                 <window.FloatingJukebox />
                 <div className="toast-container">{toasts.map(t => <window.Toast key={t.id} message={t.message} onRemove={() => removeToast(t.id)} />)}</div>
                 {modalState.isOpen && (
+                    
                     <window.GlobalModal isOpen={true} onClose={() => setModalState(prev => ({...prev, isOpen: false}))} title={modalState.title} footer={
                         <div className="flex gap-2">
                             {modalState.type !== 'alert' && <button onClick={() => setModalState(prev => ({...prev, isOpen: false}))} className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-xs font-bold transition">Cancel</button>}

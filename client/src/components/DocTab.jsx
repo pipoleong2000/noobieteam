@@ -219,13 +219,13 @@ window.DocTab = ({ workspaceId, user }) => {
     return (
         <div className="flex h-[calc(100vh-64px)] overflow-hidden bg-[#FAFAFA] animate-fade-in text-black">
             {/* Sidebar */}
-            <div className="w-72 bg-white border-r border-gray-100 flex flex-col shadow-sm z-10">
+            <div className="w-72 bg-white border-r border-gray-100 flex flex-col shadow-sm z-10 relative">
                 <div className="p-6 border-b border-gray-50 flex justify-between items-center">
                     <h2 className="text-xl font-black tracking-tight">Docs & API</h2>
                     <div className="flex gap-2">
-                        <button onClick={addFolder} className="p-2 bg-gray-50 hover:bg-gray-100 rounded-lg transition text-purple-500" title="New Folder"><window.Icon name="folder-plus" size={16} /></button>
-                        <button onClick={() => addDoc('TEXT')} className="p-2 bg-gray-50 hover:bg-gray-100 rounded-lg transition text-blue-500" title="New Document"><window.Icon name="file-text" size={16} /></button>
-                        <button onClick={() => addDoc('API')} className="p-2 bg-gray-50 hover:bg-gray-100 rounded-lg transition text-emerald-500" title="New API Endpoint"><window.Icon name="zap" size={16} /></button>
+                        <button onClick={addFolder} className="p-2 bg-gray-50 hover:bg-gray-100 rounded-lg transition text-purple-500 cursor-pointer" title="New Folder"><window.Icon name="folder-plus" size={16} /></button>
+                        <button onClick={() => addDoc('TEXT')} className="p-2 bg-gray-50 hover:bg-gray-100 rounded-lg transition text-blue-500 cursor-pointer" title="New Document"><window.Icon name="file-text" size={16} /></button>
+                        <button onClick={() => addDoc('API')} className="p-2 bg-gray-50 hover:bg-gray-100 rounded-lg transition text-emerald-500 cursor-pointer" title="New API Endpoint"><window.Icon name="zap" size={16} /></button>
                     </div>
                 </div>
                 <div className="flex-1 overflow-y-auto p-4 space-y-1">
@@ -293,7 +293,7 @@ window.DocTab = ({ workspaceId, user }) => {
             </div>
 
             {/* Content Area */}
-            <div className="flex-1 flex flex-col bg-white">
+            <div className="flex-1 flex flex-col bg-white relative z-0">
                 {activeDoc ? (
                     <div className="flex-1 flex flex-col h-full">
                         {/* Editor Header */}

@@ -39,13 +39,13 @@ window.Icon = ({ name, size = 18, className = "" }) => {
             try {
                 window.lucide.createIcons({ root: ref.current });
             } catch (e) {
-                console.error('Lucide error:', e);
+                console.error('Lucide error for icon:', name, e);
             }
         }
     }, [ready, name, size]);
 
     return (
-        <span ref={ref} className={className} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: size, height: size }}>
+        <span ref={ref} className={`${className} pointer-events-none`} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: size, height: size }}>
             <i data-lucide={name} style={{ width: size, height: size }}></i>
         </span>
     );
