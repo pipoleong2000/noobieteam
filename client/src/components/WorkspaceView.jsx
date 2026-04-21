@@ -9,9 +9,29 @@ window.WorkspaceView = ({ workspace, onBack, user, onLogout, onThemeChange, them
         return workspace.members.map(m => typeof m === 'string' ? m : m?.userId).filter(Boolean);
     });
     const [loading, setLoading] = React.useState(true);
+    const [expiredCards, setExpiredCards] = React.useState([]);
+    const [showExpiredModal, setShowExpiredModal] = React.useState(false);
+    const [selectedMoveCol, setSelectedMoveCol] = React.useState('');
 
     React.useEffect(() => {
-        fetch(`/api/workspaces/${workspace.id}/tasks`).then(r => r.json()).then(data => { setCards(data); setLoading(false); }).catch(console.error);
+        fetch(`/api/workspaces/${workspace.id}/tasks`).then(r => r.json()).then(data => { 
+            setCards(data); 
+            setLoading(false); 
+            
+            // Check for expired cards
+            const now = new Date();
+            const expired = data.filter(c => {
+                if (c.archived || !c.dueDate) return false;
+                const due = new Date(c.dueDate);
+                const diffDays = (now - due) / (1000 * 60 * 60 * 24);
+                return diffDays >= 3;
+            });
+            if (expired.length > 0) {
+                setExpiredCards(expired);
+                setShowExpiredModal(true);
+                setSelectedMoveCol(columns[0]?.id || 'todo');
+            }
+        }).catch(console.error);
         fetch('/api/users').then(r => r.json()).then(setAllUsers).catch(console.error);
         
         // Fetch unseen emojis
@@ -621,7 +641,59 @@ window.WorkspaceView = ({ workspace, onBack, user, onLogout, onThemeChange, them
             )}
             
             {/* Floating AI Assistant Chat */}
-            <div className={`ai-floating ${isJukeboxActive ? 'ai-floating-shifted' : 'ai-floating-default'} ${isAIChatOpen ? 'ai-maximized bg-white' : 'ai-minimized bg-black'} animate-pop`}>
+            
+            {showExpiredModal && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-xl z-[9999] flex items-center justify-center p-4 animate-fade-in">
+                    <div className="max-w-[480px] w-full bg-white p-8 rounded-[2.5rem] shadow-2xl border border-red-500/30">
+                        <div className="w-16 h-16 bg-red-50 rounded-3xl flex items-center justify-center mx-auto mb-6"><window.Icon name="alert-triangle" size={32} className="text-red-500" /></div>
+                        <h2 className="text-3xl font-black italic tracking-tighter mb-2 text-center text-black">Action Required</h2>
+                        <p className="text-xs text-gray-500 mb-6 text-center font-bold">The following cards are overdue by more than 3 days. Please take action to maintain workspace health.</p>
+                        
+                        <div className="max-h-[200px] overflow-y-auto no-scrollbar space-y-2 mb-6 border border-gray-100 rounded-2xl p-4 bg-gray-50">
+                            {expiredCards.map(c => (
+                                <div key={c.id || c._id} className="flex justify-between items-center text-xs">
+                                    <span className="font-bold text-gray-800 truncate pr-4">{c.title}</span>
+                                    <span className="text-[9px] font-black text-red-500 uppercase tracking-widest whitespace-nowrap bg-red-50 px-2 py-1 rounded-md">{new Date(c.dueDate).toLocaleDateString()}</span>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="space-y-3">
+                            <button onClick={async () => {
+                                const cardIds = expiredCards.map(c => c.id || c._id);
+                                await fetch(`/api/workspaces/${workspace.id}/tasks/bulk-archive`, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ cardIds }) });
+                                setCards(prev => prev.map(c => cardIds.includes(c.id || c._id) ? { ...c, archived: true } : c));
+                                setShowExpiredModal(false);
+                                showToast("Expired tasks archived. 📦");
+                            }} className="w-full py-3 bg-red-500 text-white rounded-xl text-xs font-black tracking-widest uppercase shadow-lg shadow-red-200 hover:scale-105 active:scale-95 transition">
+                                Archive All Expired
+                            </button>
+                            
+                            <div className="flex gap-2">
+                                <select value={selectedMoveCol} onChange={e => setSelectedMoveCol(e.target.value)} className="flex-1 px-4 py-3 bg-white border border-gray-200 rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-black">
+                                    {columns.map(col => <option key={col.id} value={col.id}>{col.title}</option>)}
+                                </select>
+                                <button onClick={async () => {
+                                    if (!selectedMoveCol) return;
+                                    const cardIds = expiredCards.map(c => c.id || c._id);
+                                    await fetch(`/api/workspaces/${workspace.id}/tasks/bulk-move`, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ cardIds, targetColumn: selectedMoveCol }) });
+                                    setCards(prev => prev.map(c => cardIds.includes(c.id || c._id) ? { ...c, columnId: selectedMoveCol, col: selectedMoveCol } : c));
+                                    setShowExpiredModal(false);
+                                    showToast(`Tasks moved. 🚀`);
+                                }} className="px-6 py-3 bg-black text-white rounded-xl text-xs font-black tracking-widest uppercase shadow-lg shadow-gray-300 hover:scale-105 active:scale-95 transition">
+                                    Move All
+                                </button>
+                            </div>
+
+                            <button onClick={() => setShowExpiredModal(false)} className="w-full py-3 text-gray-500 rounded-xl text-[10px] font-black tracking-widest uppercase hover:bg-gray-50 transition">
+                                Do Nothing
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            <div className={`ai-floating ${isJukeboxActive ? 'ai-floating-shifted' : 'ai-floating-default'}` ${isAIChatOpen ? 'ai-maximized bg-white' : 'ai-minimized bg-black'} animate-pop`}>
                 {isAIChatOpen ? (
                     <>
                         <div className="p-4 bg-black text-white flex justify-between items-center">

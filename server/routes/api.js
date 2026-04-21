@@ -52,6 +52,26 @@ router.post('/workspaces/:wsId/tasks', async (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
+
+// --- Bulk Operations ---
+router.put('/workspaces/:wsId/tasks/bulk-archive', async (req, res) => {
+  try {
+    const { cardIds } = req.body;
+    if (!cardIds || !Array.isArray(cardIds)) return res.status(400).json({ error: 'cardIds array required' });
+    await Task.updateMany({ _id: { $in: cardIds }, workspaceId: req.params.wsId }, { $set: { archived: true } });
+    res.json({ success: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+router.put('/workspaces/:wsId/tasks/bulk-move', async (req, res) => {
+  try {
+    const { cardIds, targetColumn } = req.body;
+    if (!cardIds || !Array.isArray(cardIds) || !targetColumn) return res.status(400).json({ error: 'cardIds array and targetColumn required' });
+    await Task.updateMany({ _id: { $in: cardIds }, workspaceId: req.params.wsId }, { $set: { columnId: targetColumn } });
+    res.json({ success: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
 router.put('/tasks/:id', async (req, res) => {
   try {
     const { auditEvent, ...updateData } = req.body;
