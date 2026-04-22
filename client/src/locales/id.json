@@ -52,7 +52,9 @@
     "done_editing": "Selesai Mengedit",
     "decrypt": "Dekripsi",
     "decrypting": "Mendekripsi...",
-    "encrypt_archive": "Enkripsi & Arsipkan"
+    "encrypt_archive": "Enkripsi & Arsipkan",
+    "new_task": "Tugas Baru",
+    "submit_intel": "Kirim Intel"
   },
   "labels": {
     "email": "Email",
@@ -105,8 +107,8 @@
     "no_document_selected": "Tidak Ada Dokumen yang Dipilih",
     "account": "Akun",
     "deadline": "Tenggat Waktu",
-    "mission_objective": "Tujuan Misi",
-    "mission_chatter": "Obrolan Misi",
+    "mission_objective": "Detail Misi",
+    "mission_chatter": "Komentar Misi",
     "action_required": "Tindakan Diperlukan",
     "vault_security": "Keamanan Brankas",
     "enter_pin": "Masukkan PIN",
@@ -125,7 +127,6 @@
     "stage_name": "Nama tahap:",
     "no_date": "Tanpa Tanggal",
     "new_backlog_item": "Item Backlog Baru",
-    "new_task": "Tugas Baru",
     "language": "Bahasa",
     "header_theme": "Tema Header",
     "security_update": "Pembaruan Keamanan",
@@ -136,14 +137,12 @@
     "user_email": "Email:",
     "locked": "Terkunci 🔐",
     "unsecured": "Tidak Aman 🔓",
-    "no_history": "Belum ada riwayat.",
-    "no_communication": "Belum ada komunikasi.",
-    "no_archived_cards": "Tidak ada kartu yang diarsipkan di kolom ini.",
     "no_docs_found": "Tidak ada dokumentasi ditemukan. Buat satu untuk memulai.",
     "search_placeholder": "Filter...",
     "leave_workspace_title": "Tinggalkan Ruang Kerja",
     "invite_user_title": "Undang Pengguna",
-    "master_pin": "PIN Utama"
+    "master_pin": "PIN Utama",
+    "url": "URL (Opsional)"
   },
   "alerts": {
     "welcome_back": "Selamat datang kembali, {name}! 🚀",
@@ -159,7 +158,7 @@
     "signup_sync_title": "Sinkronisasi Pendaftaran",
     "loading_docs": "Memuat Dokumentasi API...",
     "component_crash": "Kerusakan Komponen Terdeteksi",
-    "no_history": "Belum ada riwayat yang dicatat.",
+    "no_history": "Belum ada riwayat.",
     "library_load_error": "Kesalahan Pemuatan Pustaka",
     "retype_pin": "Ketik ulang PIN Utama Anda untuk mendekripsi.",
     "enter_secure_key": "Masukkan kunci akses aman baru Anda di bawah ini.",
@@ -197,6 +196,11 @@
     "confirm_detach_workspace": "Lepaskan diri Anda dari ruang kerja ini?",
     "confirm_destroy_folder": "Hapus folder ini secara PERMANEN? Dokumen di dalamnya akan dipindahkan ke root.",
     "confirm_destroy_document": "Hapus dokumen ini secara PERMANEN?",
-    "confirm_reset_ai": "Konfigurasi AI disetel ulang ke default sistem."
+    "confirm_reset_ai": "Konfigurasi AI disetel ulang ke default sistem.",
+    "card_locked": "Kartu ini dikunci oleh {user}",
+    "conflict": "Konflik Penimpaan",
+    "overwrite_conflict": "Konflik: Kartu ini telah diubah oleh pengguna lain baru-baru ini. Harap segarkan untuk menghindari menimpa pekerjaan mereka.",
+    "no_communication": "Belum ada komunikasi.",
+    "no_archived_cards": "Tidak ada kartu yang diarsipkan di kolom ini."
   }
 }

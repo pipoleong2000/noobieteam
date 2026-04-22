@@ -206,7 +206,7 @@ window.WorkspaceView = ({ workspace, onBack, user, onLogout, onThemeChange, them
             const content = c.content || '';
             if (filterKeyword && !title.toLowerCase().includes(filterKeyword.toLowerCase()) && !content.toLowerCase().includes(filterKeyword.toLowerCase())) return false;
             if (filterAssignee && (!c.assignees || !c.assignees.includes(filterAssignee))) return false;
-            if (filterEpic && c.epic !== filterEpic) return false;
+            if (filterEpic && (!c.epic || !c.epic.toLowerCase().includes(filterEpic.toLowerCase()))) return false;
             if (filterExpiring) {
                 if (!c.dueDate) return false;
                 const due = new Date(c.dueDate);
@@ -217,7 +217,7 @@ window.WorkspaceView = ({ workspace, onBack, user, onLogout, onThemeChange, them
             }
             return true;
         });
-    }, [cards, filterKeyword, filterAssignee, filterExpiring]);
+    }, [cards, filterKeyword, filterAssignee, filterEpic, filterExpiring]);
 
     const moveCard = async (id, direction) => {
         const card = cards.find(x => x && x.id === id);
@@ -558,10 +558,7 @@ window.WorkspaceView = ({ workspace, onBack, user, onLogout, onThemeChange, them
                                     <window.Icon name="search" size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                                     <input className="pl-8 pr-3 py-1.5 bg-white border border-gray-200 rounded-xl text-[10px] font-bold outline-none focus:border-blue-500 w-32 lg:w-48" placeholder={t('labels.search_placeholder')} value={filterKeyword} onChange={e => setFilterKeyword(e.target.value)} />
                                 </div>
-                                <select className="bg-white text-[10px] font-bold px-3 py-1.5 rounded-xl border border-gray-200 outline-none cursor-pointer text-gray-600" value={filterEpic} onChange={e => setFilterEpic(e.target.value)}>
-                                    <option value="">{t('labels.all_epics') || 'All Epics'}</option>
-                                    {epics.map(e => <option key={e} value={e}>{e}</option>)}
-                                </select>
+                                <input className="bg-white text-[10px] font-bold px-3 py-1.5 rounded-xl border border-gray-200 outline-none w-32 text-gray-600" placeholder={t('labels.epic_tag') || 'Filter by Epic'} value={filterEpic} onChange={e => setFilterEpic(e.target.value)} />
                                 <select className="bg-white text-[10px] font-bold px-3 py-1.5 rounded-xl border border-gray-200 outline-none cursor-pointer text-gray-600" value={filterAssignee} onChange={e => setFilterAssignee(e.target.value)}>
                                     <option value="">{t('labels.all_members')}</option>
                                     {members.filter(m => m && typeof m === 'string').map(m => <option key={m} value={m}>{m.split('@')[0]}</option>)}
@@ -726,7 +723,11 @@ window.WorkspaceView = ({ workspace, onBack, user, onLogout, onThemeChange, them
                 const res = await fetch(`/api/tasks/${cardId}`, { method: "PUT", headers: {"Content-Type":"application/json"}, body: JSON.stringify(upd) }); 
                 const updatedTask = await res.json(); 
                 if (!res.ok) {
-                    showAlert(updatedTask.error || "Failed to update task", "Update Error");
+                    if (res.status === 409) {
+                        showAlert(t('alerts.overwrite_conflict') || updatedTask.error || "Conflict: This card was modified by another user recently. Please refresh to avoid overwriting their work.", t('alerts.conflict') || "Overwrite Conflict");
+                    } else {
+                        showAlert(updatedTask.error || "Failed to update task", "Update Error");
+                    }
                     return;
                 }
                 setCards(prev => (prev || []).map(c => (c && (c.id === cardId || c._id === cardId)) ? updatedTask : c)); 

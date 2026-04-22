@@ -3,7 +3,7 @@ window.VaultTab = function({ workspace, user, onUpdate, onUpdateUser }) {
     const { showToast } = window.useToasts();
     const { t } = window.useTranslation ? window.useTranslation() : { t: k => k };
     const [secrets, setSecrets] = React.useState(workspace.secrets || []);
-    const [newSecret, setNewSecret] = React.useState({ service: '', account: '', password: '' });
+    const [newSecret, setNewSecret] = React.useState({ service: '', account: '', password: '', url: '' });
     const [isAdding, setIsAdding] = React.useState(false);
     const [revealData, setRevealData] = React.useState(null);
 
@@ -19,12 +19,12 @@ window.VaultTab = function({ workspace, user, onUpdate, onUpdateUser }) {
             const data = await res.json();
             const encrypted = data.encrypted;
             
-            const updatedSecrets = secrets.concat([{ id: window.generateId('sec'), service: newSecret.service, value: encrypted }]);
+            const updatedSecrets = secrets.concat([{ id: window.generateId('sec'), service: newSecret.service, url: newSecret.url, value: encrypted }]);
             
             await onUpdate({ secrets: updatedSecrets });
             
             setSecrets(updatedSecrets);
-            setNewSecret({ service: '', account: '', password: '' });
+            setNewSecret({ service: '', account: '', password: '', url: '' });
             setIsAdding(false);
             showToast(t('alerts.payload_secured'));
         } catch (err) {
@@ -122,6 +122,7 @@ window.VaultTab = function({ workspace, user, onUpdate, onUpdateUser }) {
                     <thead>
                         <tr className="bg-gray-50/50 border-b border-gray-50 text-[10px] font-black uppercase tracking-widest text-gray-400">
                             <th className="px-8 py-6">{t('labels.service')}</th>
+                            <th className="px-8 py-6">{t('labels.url') || "URL"}</th>
                             <th className="px-8 py-6">{t('labels.status')}</th>
                             <th className="px-8 py-6 text-right">{t('labels.actions_col')}</th>
                         </tr>
@@ -136,6 +137,9 @@ window.VaultTab = function({ workspace, user, onUpdate, onUpdateUser }) {
                                         </div>
                                         <span className="font-black text-sm tracking-tight">{s.service}</span>
                                     </div>
+                                </td>
+                                <td className="px-8 py-6">
+                                    {s.url ? <a href={s.url.startsWith('http') ? s.url : 'https://'+s.url} target="_blank" rel="noreferrer" className="text-blue-500 hover:text-blue-700 text-xs font-bold underline truncate inline-block max-w-[200px]">{s.url}</a> : <span className="text-gray-300 text-xs italic">N/A</span>}
                                 </td>
                                 <td className="px-8 py-6">
                                     <span className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-[9px] font-black uppercase tracking-widest">
@@ -169,6 +173,7 @@ window.VaultTab = function({ workspace, user, onUpdate, onUpdateUser }) {
                 <div className="space-y-4">
                     <input className="w-full p-4 bg-gray-50 rounded-2xl border border-gray-100 outline-none text-xs font-bold" placeholder={t('labels.service_label')} value={newSecret.service} onChange={e => setNewSecret({...newSecret, service: e.target.value})} />
                     <input className="w-full p-4 bg-gray-50 rounded-2xl border border-gray-100 outline-none text-xs font-bold" placeholder={t('labels.account_identifier')} value={newSecret.account} onChange={e => setNewSecret({...newSecret, account: e.target.value})} />
+                    <input className="w-full p-4 bg-gray-50 rounded-2xl border border-gray-100 outline-none text-xs font-bold" placeholder={t('labels.url') || "URL (Optional)"} value={newSecret.url} onChange={e => setNewSecret({...newSecret, url: e.target.value})} />
                     <input className="w-full p-4 bg-gray-50 rounded-2xl border border-gray-100 outline-none text-xs font-bold" type="password" placeholder={t('labels.password')} value={newSecret.password} onChange={e => setNewSecret({...newSecret, password: e.target.value})} />
                 </div>
             </window.GlobalModal>

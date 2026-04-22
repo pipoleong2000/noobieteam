@@ -59,7 +59,10 @@
     "new_workspace": "新工作区",
     "exit_workspace": "退出工作区",
     "reset_vault_pin": "重置保险库 PIN",
-    "add_secret": "添加机密信息"
+    "add_secret": "添加机密信息",
+    "check_all": "全选",
+    "new_task": "新任务",
+    "submit_intel": "提交情报"
   },
   "labels": {
     "email": "电子邮件",
@@ -81,6 +84,7 @@
     "audit_trail": "审计跟踪",
     "checklist_status": "清单状态",
     "done": "完成",
+    "epic_tag": "史诗标签",
     "project_vault": "项目保险库",
     "encrypted_storage_center": "加密存储中心",
     "service": "服务",
@@ -112,8 +116,8 @@
     "no_document_selected": "未选择文档",
     "account": "账号",
     "deadline": "截止日期",
-    "mission_objective": "任务目标",
-    "mission_chatter": "任务聊天",
+    "mission_objective": "任务详情",
+    "mission_chatter": "任务评论",
     "action_required": "需要采取行动",
     "vault_security": "保险库安全",
     "enter_pin": "输入 PIN",
@@ -132,7 +136,6 @@
     "stage_name": "阶段名称：",
     "no_date": "无日期",
     "new_backlog_item": "新积压任务",
-    "new_task": "新任务",
     "language": "语言",
     "header_theme": "页眉主题",
     "security_update": "安全更新",
@@ -143,9 +146,6 @@
     "user_email": "电子邮件：",
     "locked": "已锁定 🔐",
     "unsecured": "未加密 🔓",
-    "no_history": "尚无历史记录。",
-    "no_communication": "尚无通信记录。",
-    "no_archived_cards": "此列中没有已归档的卡片。",
     "no_docs_found": "未发现文档。请创建一个以开始。",
     "search_placeholder": "筛选...",
     "leave_workspace_title": "离开工作区",
@@ -161,7 +161,9 @@
     "youtube_url": "YouTube 链接...",
     "no_content_available": "暂无内容。",
     "mission_chatter_title": "任务聊天",
-    "status_col": "状态"
+    "status_col": "状态",
+    "url": "URL (可选)",
+    "system": "系统"
   },
   "alerts": {
     "welcome_back": "欢迎回来，{name}！🚀",
@@ -177,7 +179,7 @@
     "signup_sync_title": "注册同步",
     "loading_docs": "正在加载 API 文档...",
     "component_crash": "检测到组件崩溃",
-    "no_history": "尚无历史记录。",
+    "no_history": "尚无操作历史。",
     "library_load_error": "库加载错误",
     "retype_pin": "重新输入您的主 PIN 以解密。",
     "enter_secure_key": "在下方输入您的新安全访问密钥。",
@@ -223,6 +225,12 @@
     "file_attached": "文件附件已同步。📎",
     "confirm_reset_pin": "确定要重置 {email} 的主保险库 PIN 吗？他们下次登录时将被要求创建一个新 PIN。",
     "vault_pin_reset": "{email} 的保险库 PIN 已重置。",
-    "confirm_detach_workspace_title": "确定要离开此工作区吗？"
+    "confirm_detach_workspace_title": "确定要离开此工作区吗？",
+    "card_locked": "此卡片已被 {user} 锁定",
+    "conflict": "覆盖冲突",
+    "overwrite_conflict": "冲突：此卡片最近已被其他用户修改。请刷新以避免覆盖他们的工作。",
+    "no_communication": "尚无评论记录。",
+    "no_archived_cards": "此列中没有已归档的卡片。",
+    "attachment_preview": "附件预览"
   }
 }

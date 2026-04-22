@@ -60,6 +60,7 @@ const workspaceSchema = new mongoose.Schema({
   secrets: [{
     id: String,
     service: String,
+    url: String,
     value: String,
     iv: String,
     authTag: String

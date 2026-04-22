@@ -56,7 +56,9 @@
     "archive": "Архив",
     "download": "Скачать",
     "remove": "Удалить",
-    "new_workspace": "Новая область"
+    "new_workspace": "Новая область",
+    "new_task": "Новая задача",
+    "submit_intel": "Отправить данные"
   },
   "labels": {
     "email": "Email",
@@ -109,8 +111,8 @@
     "no_document_selected": "Документ не выбран",
     "account": "Аккаунт",
     "deadline": "Срок",
-    "mission_objective": "Цель миссии",
-    "mission_chatter": "Чат миссии",
+    "mission_objective": "Детали миссии",
+    "mission_chatter": "Комментарии миссии",
     "action_required": "Требуется действие",
     "vault_security": "Безопасность хранилища",
     "enter_pin": "Введите PIN",
@@ -129,7 +131,6 @@
     "stage_name": "Название этапа:",
     "no_date": "Без даты",
     "new_backlog_item": "Новый элемент бэклога",
-    "new_task": "Новая задача",
     "language": "Язык",
     "header_theme": "Тема заголовка",
     "security_update": "Обновление безопасности",
@@ -140,9 +141,6 @@
     "user_email": "Email:",
     "locked": "Заблокировано 🔐",
     "unsecured": "Незащищено 🔓",
-    "no_history": "История пока пуста.",
-    "no_communication": "Сообщений пока нет.",
-    "no_archived_cards": "В этой колонке нет архивных карточек.",
     "no_docs_found": "Документация не найдена. Создайте ее, чтобы начать.",
     "search_placeholder": "Фильтр...",
     "leave_workspace_title": "Покинуть область",
@@ -152,7 +150,8 @@
     "no_active_workspaces": "Активных областей не найдено.",
     "comment_placeholder": "Оставьте комментарий... @ для тега",
     "define_objective": "Определите новую цель...",
-    "attachments": "Вложения"
+    "attachments": "Вложения",
+    "url": "URL (опционально)"
   },
   "alerts": {
     "welcome_back": "С возвращением, {name}! 🚀",
@@ -168,7 +167,7 @@
     "signup_sync_title": "Регистрация завершена",
     "loading_docs": "Загрузка документации API...",
     "component_crash": "Обнаружен сбой компонента",
-    "no_history": "История пока пуста.",
+    "no_history": "История пока не записана.",
     "library_load_error": "Ошибка загрузки библиотеки",
     "retype_pin": "Введите Мастер-PIN для расшифровки.",
     "enter_secure_key": "Введите новый секретный ключ ниже.",
@@ -211,6 +210,11 @@
     "workspace_initialized": "Новая рабочая область инициализирована! ✨",
     "ai_welcome": "Привет! Я NoobieHelper. Я могу помочь вам управлять доской. Чем могу помочь?",
     "no_objective": "Цель не определена...",
-    "file_attached": "Файл прикреплен. 📎"
+    "file_attached": "Файл прикреплен. 📎",
+    "card_locked": "Эта карточка заблокирована пользователем {user}",
+    "conflict": "Конфликт перезаписи",
+    "overwrite_conflict": "Конфликт: эта карточка была недавно изменена другим пользователем. Пожалуйста, обновите страницу, чтобы не перезаписать чужую работу.",
+    "no_communication": "История общения отсутствует.",
+    "no_archived_cards": "В этой колонке нет архивных карточек."
   }
 }

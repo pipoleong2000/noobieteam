@@ -52,7 +52,9 @@
     "done_editing": "完成編輯",
     "decrypt": "解密",
     "decrypting": "解密中...",
-    "encrypt_archive": "加密並歸檔"
+    "encrypt_archive": "加密並歸檔",
+    "new_task": "新任務",
+    "submit_intel": "提交情報"
   },
   "labels": {
     "email": "電子郵件",
@@ -125,7 +127,6 @@
     "stage_name": "階段名稱：",
     "no_date": "無日期",
     "new_backlog_item": "新待辦任務",
-    "new_task": "新任務",
     "language": "語言",
     "header_theme": "介面主題",
     "security_update": "安全更新",
@@ -136,14 +137,12 @@
     "user_email": "電子郵件：",
     "locked": "已鎖定 🔐",
     "unsecured": "未加密 🔓",
-    "no_history": "尚無記錄。",
-    "no_communication": "尚無評論記錄。",
-    "no_archived_cards": "此列中沒有已歸檔的卡片。",
     "no_docs_found": "未找到文檔。創建一個開始吧。",
     "search_placeholder": "搜索...",
     "leave_workspace_title": "離開工作區",
     "invite_user_title": "邀請用戶",
-    "master_pin": "主 PIN"
+    "master_pin": "主 PIN",
+    "url": "URL (可選)"
   },
   "alerts": {
     "welcome_back": "歡迎回來，{name}！🚀",
@@ -159,7 +158,7 @@
     "signup_sync_title": "註冊同步",
     "loading_docs": "正在加載 API 文檔...",
     "component_crash": "檢測到組件崩潰",
-    "no_history": "尚无歷史記錄。",
+    "no_history": "尚無操作歷史。",
     "library_load_error": "庫加載錯誤",
     "retype_pin": "重新輸入您的主 PIN 以解密。",
     "enter_secure_key": "在下方輸入您的新安全訪問金鑰。",
@@ -197,6 +196,11 @@
     "confirm_detach_workspace": "確定要從該工作區脫離嗎？",
     "confirm_destroy_folder": "確定永久刪除此文件夾嗎？內部文檔將移動到根目錄。",
     "confirm_destroy_document": "確定永久刪除此文檔嗎？",
-    "confirm_reset_ai": "AI 配置已重置為系統預設值。"
+    "confirm_reset_ai": "AI 配置已重置為系統預設值。",
+    "card_locked": "此卡片已被 {user} 鎖定",
+    "conflict": "覆蓋衝突",
+    "overwrite_conflict": "衝突：此卡片最近已被其他用戶修改。請刷新以避免覆蓋他們的工作。",
+    "no_communication": "尚無評論記錄。",
+    "no_archived_cards": "此列中沒有已歸檔的卡片。"
   }
 }

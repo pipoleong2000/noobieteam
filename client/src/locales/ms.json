@@ -52,7 +52,9 @@
     "done_editing": "Selesai Mengedit",
     "decrypt": "Nyahsulit",
     "decrypting": "Menyahsulit...",
-    "encrypt_archive": "Sulit & Arkib"
+    "encrypt_archive": "Sulit & Arkib",
+    "new_task": "Tugasan Baru",
+    "submit_intel": "Hantar Intel"
   },
   "labels": {
     "email": "Emel",
@@ -105,8 +107,8 @@
     "no_document_selected": "Tiada Dokumen Dipilih",
     "account": "Akaun",
     "deadline": "Tarikh Akhir",
-    "mission_objective": "Objektif Misi",
-    "mission_chatter": "Sembang Misi",
+    "mission_objective": "Butiran Misi",
+    "mission_chatter": "Komen Misi",
     "action_required": "Tindakan Diperlukan",
     "vault_security": "Keselamatan Bilik Kebal",
     "enter_pin": "Masukkan PIN",
@@ -125,7 +127,6 @@
     "stage_name": "Nama peringkat:",
     "no_date": "Tiada Tarikh",
     "new_backlog_item": "Item Tunggakan Baru",
-    "new_task": "Tugasan Baru",
     "language": "Bahasa",
     "header_theme": "Tema Pengepala",
     "security_update": "Kemas Kini Keselamatan",
@@ -136,14 +137,12 @@
     "user_email": "Emel:",
     "locked": "Terkunci 🔐",
     "unsecured": "Tidak Selamat 🔓",
-    "no_history": "Belum ada sejarah.",
-    "no_communication": "Belum ada komunikasi.",
-    "no_archived_cards": "Tiada kad diarkibkan dalam lajur ini.",
     "no_docs_found": "Tiada dokumentasi dijumpai. Bina satu untuk mula.",
     "search_placeholder": "Tapis...",
     "leave_workspace_title": "Tinggalkan Ruang Kerja",
     "invite_user_title": "Jemput Pengguna",
-    "master_pin": "PIN Utama"
+    "master_pin": "PIN Utama",
+    "url": "URL (Pilihan)"
   },
   "alerts": {
     "welcome_back": "Selamat kembali, {name}! 🚀",
@@ -159,7 +158,7 @@
     "signup_sync_title": "Penyegerakan Pendaftaran",
     "loading_docs": "Memuatkan Dokumentasi API...",
     "component_crash": "Kerosakan Komponen Dikesan",
-    "no_history": "Belum ada sejarah yang dicatatkan.",
+    "no_history": "Belum ada sejarah.",
     "library_load_error": "Ralat Memuatkan Perpustakaan",
     "retype_pin": "Taip semula PIN Utama anda untuk nyahsulit.",
     "enter_secure_key": "Masukkan kunci akses selamat baru anda di bawah.",
@@ -197,6 +196,11 @@
     "confirm_detach_workspace": "Putuskan sambungan anda daripada ruang kerja ini?",
     "confirm_destroy_folder": "Musnahkan folder ini secara KEKAL? Dokumen di dalamnya akan dipindahkan ke root.",
     "confirm_destroy_document": "Musnahkan dokumen ini secara KEKAL?",
-    "confirm_reset_ai": "Konfigurasi AI ditetapkan semula ke lalai sistem."
+    "confirm_reset_ai": "Konfigurasi AI ditetapkan semula ke lalai sistem.",
+    "card_locked": "Kad ini dikunci oleh {user}",
+    "conflict": "Konflik Tindihan",
+    "overwrite_conflict": "Konflik: Kad ini telah diubah oleh pengguna lain baru-baru ini. Sila segar semula untuk mengelakkan menindih kerja mereka.",
+    "no_communication": "Tiada log komunikasi.",
+    "no_archived_cards": "Tiada kad diarkibkan dalam lajur ini."
   }
 }

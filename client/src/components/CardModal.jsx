@@ -31,6 +31,7 @@ window.CardModal = ({ card, user, members, allUsers, onClose, onSave, onDelete, 
     const [showAssignDropdown, setShowAssignDropdown] = React.useState(false);
     const fileInputRef = React.useRef(null);
     const [showAudit, setShowAudit] = React.useState(false);
+    const [previewImage, setPreviewImage] = React.useState(null);
 
     const [comments, setComments] = React.useState(card.comments || []);
     const [newComment, setNewComment] = React.useState('');
@@ -237,7 +238,15 @@ window.CardModal = ({ card, user, members, allUsers, onClose, onSave, onDelete, 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {attachments.map((a, i) => (
                                 <div key={i} className="bg-gray-50 p-4 rounded-2xl border border-gray-100 flex items-center justify-between shadow-sm hover:shadow-md transition">
-                                    <div className="flex items-center gap-3"><window.Icon name="file-text" size={18} className="text-gray-400" /><div><p className="text-[10px] font-black line-clamp-1">{a.name}</p><p className="text-[8px] text-gray-400 uppercase font-black">{a.size}</p></div></div>
+                                    <div className="flex items-center gap-3">
+                                        {a.dataUrl?.startsWith('data:image/') || a.name.match(/\.(jpeg|jpg|gif|png|webp)$/i) ? (
+                                            <div className="w-10 h-10 rounded-lg overflow-hidden cursor-pointer border border-gray-200" onClick={() => setPreviewImage(a.dataUrl)}>
+                                                <img src={a.dataUrl} alt={a.name} className="w-full h-full object-cover" />
+                                            </div>
+                                        ) : (
+                                            <window.Icon name="file-text" size={18} className="text-gray-400" />
+                                        )}
+                                        <div><p className="text-[10px] font-black line-clamp-1">{a.name}</p><p className="text-[8px] text-gray-400 uppercase font-black">{a.size}</p></div></div>
                                     <div className="flex gap-1"><button onClick={() => { const l = document.createElement('a'); l.href = a.dataUrl; l.download = a.name; l.click(); }} className="p-2 text-blue-500 hover:bg-blue-50 rounded-full transition" title={t('actions.download')}><window.Icon name="download" size={16} /></button><button onClick={() => setAttachments(prev => prev.filter((_, idx) => idx !== i))} className="p-2 text-red-500 hover:bg-red-50 rounded-full transition" title={t('actions.remove')}><window.Icon name="trash-2" size={16} /></button></div>
                                 </div>
                             ))}
@@ -277,7 +286,7 @@ window.CardModal = ({ card, user, members, allUsers, onClose, onSave, onDelete, 
                             <div className="relative flex-1">
                                 <textarea 
                                     className="w-full bg-gray-50 border border-gray-100 rounded-2xl p-4 text-sm resize-none outline-none focus:ring-2 focus:ring-blue-500 transition" 
-                                    rows="2" 
+                                    rows="1" 
                                     placeholder={t('labels.comment_placeholder')}
                                     value={newComment} 
                                     onChange={handleCommentChange} 
@@ -304,7 +313,7 @@ window.CardModal = ({ card, user, members, allUsers, onClose, onSave, onDelete, 
             <div className="space-y-2">
                 {(card.auditTrail || []).map((log, i) => (
                     <div key={i} className="text-xs text-gray-500 flex justify-between border-b border-gray-50 pb-1">
-                        <span><strong className="text-gray-700">{log.user || 'Unknown'}</strong> -> {log.action}</span>
+                        <span><strong className="text-gray-700">{log.user || t('labels.system')}</strong> -> {log.action}</span>
                         <span className="text-[9px] text-gray-400">{new Date(log.timestamp).toLocaleString()}</span>
                     </div>
                 ))}
@@ -316,10 +325,17 @@ window.CardModal = ({ card, user, members, allUsers, onClose, onSave, onDelete, 
         <button onClick={() => setShowAudit(!showAudit)} className="flex items-center gap-1.5 text-gray-400 hover:text-gray-600 transition text-[10px] font-black uppercase tracking-widest">
             <window.Icon name={showAudit ? "chevron-up" : "chevron-down"} size={14} /> {t('labels.audit_trail')}
         </button>
-        <button onClick={() => onSave({ __v: card.__v, title, content, dueDate, urgency, epic, checklist, assignees, attachments, auditEvent: { user: user?.email || 'System', action: 'Updated card contents' } })} className="bg-blue-500 text-white px-10 py-4 rounded-full text-[10px] font-black uppercase tracking-widest active:scale-95 transition shadow-xl">{t('actions.synchronize')}</button>
+        <button onClick={() => onSave({ __v: card.__v, updatedAt: card.updatedAt, title, content, dueDate, urgency, epic, checklist, assignees, attachments, auditEvent: { user: user?.email || 'System', action: 'Updated card contents' } })} className="bg-blue-500 text-white px-10 py-4 rounded-full text-[10px] font-black uppercase tracking-widest active:scale-95 transition shadow-xl">{t('actions.synchronize')}</button>
     </div>
 </div>
             </div>
+            {previewImage && (
+                <window.GlobalModal isOpen={true} onClose={() => setPreviewImage(null)} title={t('labels.attachment_preview') || "Attachment Preview"} footer={<button onClick={() => setPreviewImage(null)} className="bg-black text-white px-8 py-3 rounded-full text-[9px] font-black uppercase tracking-widest shadow-xl">{t('actions.close')}</button>}>
+                    <div className="flex items-center justify-center min-h-[300px]">
+                        <img src={previewImage} alt="Preview" className="max-w-full max-h-[70vh] rounded-2xl shadow-lg" />
+                    </div>
+                </window.GlobalModal>
+            )}
         </div>
     );
 };

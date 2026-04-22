@@ -52,7 +52,9 @@
     "done_editing": "編集完了",
     "decrypt": "復号",
     "decrypting": "復号中...",
-    "encrypt_archive": "暗号化して保存"
+    "encrypt_archive": "暗号化して保存",
+    "new_task": "新しいタスク",
+    "submit_intel": "情報を送信"
   },
   "labels": {
     "email": "メールアドレス",
@@ -105,7 +107,7 @@
     "no_document_selected": "ドキュメントが選択されていません",
     "account": "アカウント",
     "deadline": "期限",
-    "mission_objective": "ミッション内容",
+    "mission_objective": "ミッション詳細",
     "mission_chatter": "ミッションコメント",
     "action_required": "アクションが必要です",
     "vault_security": "保管庫セキュリティ",
@@ -125,7 +127,6 @@
     "stage_name": "ステージ名：",
     "no_date": "日付なし",
     "new_backlog_item": "新しいバックログ項目",
-    "new_task": "新しいタスク",
     "language": "言語",
     "header_theme": "ヘッダーテーマ",
     "security_update": "セキュリティ更新",
@@ -136,14 +137,12 @@
     "user_email": "メールアドレス：",
     "locked": "ロック済み 🔐",
     "unsecured": "未保護 🔓",
-    "no_history": "履歴はまだありません。",
-    "no_communication": "通信ログはありません。",
-    "no_archived_cards": "この列にアーカイブされたカードはありません。",
     "no_docs_found": "ドキュメントが見つかりません。作成して開始してください。",
     "search_placeholder": "フィルター...",
     "leave_workspace_title": "ワークスペースを離れる",
     "invite_user_title": "ユーザーを招待",
-    "master_pin": "マスターPIN"
+    "master_pin": "マスターPIN",
+    "url": "URL (任意)"
   },
   "alerts": {
     "welcome_back": "お帰りなさい、{name}さん！🚀",
@@ -159,7 +158,7 @@
     "signup_sync_title": "サインアップ同期",
     "loading_docs": "APIドキュメントを読み込んでいます...",
     "component_crash": "コンポーネントのクラッシュが検出されました",
-    "no_history": "履歴はまだ記録されていません。",
+    "no_history": "履歴はまだありません。",
     "library_load_error": "ライブラリ読み込みエラー",
     "retype_pin": "解読するにはマスターPINを再入力してください。",
     "enter_secure_key": "以下に新しいセキュアアクセスキーを入力してください。",
@@ -197,6 +196,11 @@
     "confirm_detach_workspace": "このワークスペースから離脱しますか？",
     "confirm_destroy_folder": "このフォルダを永久に削除しますか？中のドキュメントはルートに移動されます。",
     "confirm_destroy_document": "このドキュメントを永久に削除しますか？",
-    "confirm_reset_ai": "AI設定がシステムデフォルトにリセットされました。"
+    "confirm_reset_ai": "AI設定がシステムデフォルトにリセットされました。",
+    "card_locked": "このカードは {user} によってロックされています",
+    "conflict": "上書きの競合",
+    "overwrite_conflict": "競合：このカードは最近別のユーザーによって変更されました。変更内容を上書きしないよう、ページを更新してください。",
+    "no_communication": "通信ログはありません。",
+    "no_archived_cards": "この列にアーカイブされたカードはありません。"
   }
 }
