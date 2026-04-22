@@ -69,6 +69,7 @@ const workspaceSchema = new mongoose.Schema({
 const taskSchema = new mongoose.Schema({
   workspaceId: { type: String, required: true },
   columnId: String,
+  epic: { type: String },
   title: { type: String, required: true },
   archived: { type: Boolean, default: false },
   content: String,
@@ -97,7 +98,7 @@ const taskSchema = new mongoose.Schema({
     dataUrl: String,
     size: String
   }]
-}, { timestamps: true });
+}, { timestamps: true, optimisticConcurrency: true });
 
 userSchema.set('toJSON', { virtuals: true });
 workspaceSchema.set('toJSON', { virtuals: true });

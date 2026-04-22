@@ -74,22 +74,29 @@ router.put('/workspaces/:wsId/tasks/bulk-move', async (req, res) => {
 
 router.put('/tasks/:id', async (req, res) => {
   try {
-    const { auditEvent, ...updateData } = req.body;
-    
-    let updateQuery = {};
-    if (Object.keys(updateData).length > 0) {
-       updateQuery.$set = updateData;
-    }
-    if (auditEvent) {
-       updateQuery.$push = { auditTrail: { user: auditEvent.user, action: auditEvent.action, timestamp: new Date() } };
-    }
-    
-    // Fallback if updateQuery is empty
-    if (Object.keys(updateQuery).length === 0) updateQuery = req.body;
+    const { auditEvent, __v, ...updateData } = req.body;
+    const task = await Task.findById(req.params.id);
+    if (!task) return res.status(404).json({ error: 'Task not found' });
 
-    const task = await Task.findByIdAndUpdate(req.params.id, updateQuery, { new: true });
+    // Enforce optimistic concurrency by setting the version key sent from frontend
+    if (__v !== undefined) {
+        task.__v = __v;
+    }
+
+    Object.assign(task, updateData);
+
+    if (auditEvent) {
+       task.auditTrail.push({ user: auditEvent.user, action: auditEvent.action, timestamp: new Date() });
+    }
+
+    await task.save();
     res.json(task);
-  } catch(e) { res.status(500).json({ error: e.message }); }
+  } catch(e) {
+    if (e.name === 'VersionError') {
+        return res.status(409).json({ error: 'Conflict: This card was modified by another user. Please refresh and try again.' });
+    }
+    res.status(500).json({ error: e.message });
+  }
 });
 
 

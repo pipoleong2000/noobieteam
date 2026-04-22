@@ -1,4 +1,16 @@
-window.CardModal = ({ card, user, members, allUsers, onClose, onSave, onDelete }) => {
+window.CardModal = ({ card, user, members, allUsers, onClose, onSave, onDelete, socket, workspaceId }) => {
+    
+    React.useEffect(() => {
+        if (socket && card && (card.id || card._id)) {
+            socket.emit('card:lock', { cardId: card.id || card._id, userEmail: user?.email, workspaceId });
+        }
+        return () => {
+            if (socket && card && (card.id || card._id)) {
+                socket.emit('card:unlock', { cardId: card.id || card._id, workspaceId });
+            }
+        };
+    }, [socket, card.id, card._id, user?.email, workspaceId]);
+
     const { showConfirm } = window.useModals();
     const { showToast } = window.useToasts();
     const { t } = window.useTranslation ? window.useTranslation() : { t: k => k };
@@ -11,6 +23,7 @@ window.CardModal = ({ card, user, members, allUsers, onClose, onSave, onDelete }
         return dStr.includes('T') ? dStr.split('T')[0] : dStr;
     });
     const [urgency, setUrgency] = React.useState(card.urgency || 'low');
+    const [epic, setEpic] = React.useState(card.epic || '');
     const [checklist, setChecklist] = React.useState(card.checklist || []);
     const [assignees, setAssignees] = React.useState(card.assignees || []);
     const [newCheckItem, setNewCheckItem] = React.useState('');
@@ -198,7 +211,13 @@ window.CardModal = ({ card, user, members, allUsers, onClose, onSave, onDelete }
                     </div>
                     
                     <div>
-                        <label className="block text-sm font-black text-black uppercase tracking-widest mb-6 flex justify-between">{t('labels.checklist_status')} <span className="text-blue-500 lowercase tracking-tight">{checklist.filter(i => i && i.done).length}/{checklist.length} {t('labels.done')}</span></label>
+                        <label className="block text-sm font-black text-black uppercase tracking-widest mb-6 flex justify-between items-center">
+            <div className="flex items-center gap-4">
+                {t('labels.checklist_status')}
+                <button onClick={() => setChecklist(prev => prev.map(item => ({ ...item, done: true })))} className="text-[9px] font-bold text-blue-500 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-1 rounded transition">Check All</button>
+            </div>
+            <span className="text-blue-500 lowercase tracking-tight">{checklist.filter(i => i && i.done).length}/{checklist.length} {t('labels.done')}</span>
+        </label>
                         <div className="space-y-3 mb-6">
                             {checklist.map(item => {
                                 if (!item) return null;
@@ -296,7 +315,7 @@ window.CardModal = ({ card, user, members, allUsers, onClose, onSave, onDelete }
         <button onClick={() => setShowAudit(!showAudit)} className="flex items-center gap-1.5 text-gray-400 hover:text-gray-600 transition text-[10px] font-black uppercase tracking-widest">
             <window.Icon name={showAudit ? "chevron-up" : "chevron-down"} size={14} /> {t('labels.audit_trail')}
         </button>
-        <button onClick={() => onSave({ title, content, dueDate, urgency, checklist, assignees, attachments, auditEvent: { user: user?.email || 'System', action: 'Updated card contents' } })} className="bg-blue-500 text-white px-10 py-4 rounded-full text-[10px] font-black uppercase tracking-widest active:scale-95 transition shadow-xl">{t('actions.synchronize')}</button>
+        <button onClick={() => onSave({ __v: card.__v, title, content, dueDate, urgency, epic, checklist, assignees, attachments, auditEvent: { user: user?.email || 'System', action: 'Updated card contents' } })} className="bg-blue-500 text-white px-10 py-4 rounded-full text-[10px] font-black uppercase tracking-widest active:scale-95 transition shadow-xl">{t('actions.synchronize')}</button>
     </div>
 </div>
             </div>

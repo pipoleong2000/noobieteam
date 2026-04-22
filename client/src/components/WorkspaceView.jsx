@@ -97,6 +97,35 @@ window.WorkspaceView = ({ workspace, onBack, user, onLogout, onThemeChange, them
     }, []);
     const [isAIChatOpen, setIsAIChatOpen] = React.useState(false);
     const [viewArchivedCol, setViewArchivedCol] = React.useState(null);
+    const socketRef = React.useRef(null);
+    const [lockedCards, setLockedCards] = React.useState({});
+    
+    React.useEffect(() => {
+        if (!window.io) return;
+        const socket = window.io();
+        socketRef.current = socket;
+        
+        socket.on('card:locked', ({ cardId, user }) => {
+            setLockedCards(prev => Object.assign({}, prev, { [cardId]: user }));
+        });
+        
+        socket.on('card:unlocked', ({ cardId }) => {
+            setLockedCards(prev => {
+                const next = Object.assign({}, prev);
+                delete next[cardId];
+                return next;
+            });
+        });
+        
+        socket.on('card:lock_rejected', ({ cardId, message }) => {
+            showToast(message);
+            setEditingCard(null);
+        });
+        
+        return () => {
+            socket.disconnect();
+        };
+    }, [workspace.id]);
     const [showBacklog, setShowBacklog] = React.useState(false);
     
     // Safety check for Drag and Drop library
@@ -151,6 +180,7 @@ window.WorkspaceView = ({ workspace, onBack, user, onLogout, onThemeChange, them
     const [isAISettingsOpen, setIsAISettingsOpen] = React.useState(false);
     const [filterKeyword, setFilterKeyword] = React.useState('');
     const [filterAssignee, setFilterAssignee] = React.useState('');
+    const [filterEpic, setFilterEpic] = React.useState('');
     const [filterExpiring, setFilterExpiring] = React.useState(false);
     const userLabel = React.useMemo(() => user?.email?.charAt(0).toUpperCase() || '?', [user]);
 
@@ -165,7 +195,9 @@ window.WorkspaceView = ({ workspace, onBack, user, onLogout, onThemeChange, them
         return await res.json();
     };
 
-    const displayCards = React.useMemo(() => {
+    const epics = React.useMemo(() => [...new Set((cards || []).map(c => c && c.epic).filter(Boolean))], [cards]);
+
+            const displayCards = React.useMemo(() => {
         const uniqueCards = Array.from(new Map((Array.isArray(cards) ? cards : []).filter(c => c && (c.id || c._id)).map(c => [String(c.id || c._id), c])).values());
         return uniqueCards.filter(c => {
             if (!c) return false;
@@ -525,6 +557,10 @@ window.WorkspaceView = ({ workspace, onBack, user, onLogout, onThemeChange, them
                                     <window.Icon name="search" size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                                     <input className="pl-8 pr-3 py-1.5 bg-white border border-gray-200 rounded-xl text-[10px] font-bold outline-none focus:border-blue-500 w-32 lg:w-48" placeholder={t('labels.search_placeholder')} value={filterKeyword} onChange={e => setFilterKeyword(e.target.value)} />
                                 </div>
+                                <select className="bg-white text-[10px] font-bold px-3 py-1.5 rounded-xl border border-gray-200 outline-none cursor-pointer text-gray-600" value={filterEpic} onChange={e => setFilterEpic(e.target.value)}>
+                                    <option value="">All Epics</option>
+                                    {epics.map(e => <option key={e} value={e}>{e}</option>)}
+                                </select>
                                 <select className="bg-white text-[10px] font-bold px-3 py-1.5 rounded-xl border border-gray-200 outline-none cursor-pointer text-gray-600" value={filterAssignee} onChange={e => setFilterAssignee(e.target.value)}>
                                     <option value="">{t('labels.all_members')}</option>
                                     {members.filter(m => m && typeof m === 'string').map(m => <option key={m} value={m}>{m.split('@')[0]}</option>)}
@@ -589,9 +625,10 @@ window.WorkspaceView = ({ workspace, onBack, user, onLogout, onThemeChange, them
                                             {displayCards.filter(c => c && (c.columnId === 'backlog' || c.col === 'backlog')).map((card, idx) => (
                                                 <dnd.Draggable key={`backlog-${card.id || card._id || idx}`} draggableId={String(card.id || card._id)} index={idx}>
                                                     {(dragProvided, snapshot) => (
-                                                        <div ref={dragProvided.innerRef} {...dragProvided.draggableProps} {...dragProvided.dragHandleProps} onClick={() => setEditingCard(card)} className={`bg-white border border-gray-100 rounded-xl p-3 shadow-sm hover:shadow-md transition cursor-pointer flex justify-between items-center group ${snapshot.isDragging ? 'rotate-2 scale-105 shadow-xl z-50' : ''}`}>
-                                                            <div className="flex flex-col gap-1 overflow-hidden pr-2">
-                                                                <span className="font-bold text-xs text-gray-800 truncate">{card.title}</span>
+                                                        <div ref={dragProvided.innerRef} {...dragProvided.draggableProps} {...dragProvided.dragHandleProps} onClick={() => { const cId = card.id || card._id; if (lockedCards[cId] && lockedCards[cId] !== user?.email) { showToast(t('alerts.card_locked', { user: lockedCards[cId] }) || `Locked by ${lockedCards[cId]}`); } else { setEditingCard(card); } }} className={`bg-white border border-gray-100 rounded-xl p-3 shadow-sm hover:shadow-md transition cursor-pointer flex justify-between items-center group ${snapshot.isDragging ? 'rotate-2 scale-105 shadow-xl z-50' : ''}`}>
+                                                            {lockedCards[card.id || card._id] && lockedCards[card.id || card._id] !== user?.email && <div className="absolute -top-2 -right-2 bg-red-100 text-red-600 rounded-full p-1 z-10 shadow-sm border border-white" title={`Locked by ${lockedCards[card.id || card._id]}`}><window.Icon name="lock" size={12}/></div>}
+<div className="flex flex-col gap-1 overflow-hidden pr-2">
+                                                                <span className="font-bold text-xs text-gray-800 truncate">{card.epic ? <span className="mr-1 text-[8px] px-1 bg-purple-100 text-purple-700 rounded uppercase">{card.epic}</span> : null}{card.title}</span>
                                                                 <span className="text-[9px] font-black uppercase tracking-widest text-gray-400">
                                                                     {card.dueDate ? new Date(card.dueDate).toLocaleDateString() : t('labels.no_date')}
                                                                 </span>
@@ -642,8 +679,10 @@ window.WorkspaceView = ({ workspace, onBack, user, onLogout, onThemeChange, them
                                                             {displayCards.filter(c => c && (c.columnId === col.id || c.col === col.id)).map((card, idx) => (
                                                                 <dnd.Draggable key={`col-${card.id || card._id || idx}`} draggableId={String(card.id || card._id)} index={idx}>
                                                                     {(provided, snapshot) => (
-                                                                        <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps} onClick={() => setEditingCard(card)} className={`bg-white text-gray-800 border border-gray-100 rounded-2xl p-4 insta-shadow hover:shadow-xl transition-all duration-300 cursor-pointer group relative ${snapshot.isDragging ? 'rotate-2 scale-105 shadow-2xl z-50' : 'hover:scale-[1.02]'}`}>
-                                            <div className="flex justify-between items-start mb-3"><div className={`w-16 h-2 rounded-full ${ {low: 'bg-blue-300', med: 'bg-yellow-400', high: 'bg-red-500'}[card.urgency?.toLowerCase() || 'low'] }`}></div><div className="opacity-0 group-hover:opacity-100 flex gap-2 transition" onClick={e => e.stopPropagation()}><button onClick={async (e) => { e.stopPropagation(); await fetch(`/api/tasks/${card.id}`, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ archived: true, auditEvent: { user: user?.email || 'System', action: 'Archived card' } }) }); setCards(cards.map(c => c.id === card.id ? { ...c, archived: true } : c)); showToast(t('alerts.card_archived'), 'success'); }} className="p-2 bg-gray-50 text-gray-400 hover:text-red-500 rounded-xl hover:bg-red-50" title={t('actions.archive')}><window.Icon name="archive" size={14}/></button><button onClick={(e) => { e.stopPropagation(); moveCard(card.id, -1); }} className="p-2 bg-gray-50 rounded-xl hover:bg-gray-100"><window.Icon name="arrow-left" size={14}/></button><button onClick={(e) => { e.stopPropagation(); moveCard(card.id, 1); }} className="p-2 bg-gray-50 rounded-xl hover:bg-gray-100"><window.Icon name="arrow-right" size={14}/></button></div></div>
+                                                                        <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps} onClick={() => { const cId = card.id || card._id; if (lockedCards[cId] && lockedCards[cId] !== user?.email) { showToast(t('alerts.card_locked', { user: lockedCards[cId] }) || `Locked by ${lockedCards[cId]}`); } else { setEditingCard(card); } }} className={`bg-white text-gray-800 border border-gray-100 rounded-2xl p-4 insta-shadow hover:shadow-xl transition-all duration-300 cursor-pointer group relative ${snapshot.isDragging ? 'rotate-2 scale-105 shadow-2xl z-50' : 'hover:scale-[1.02]'}`}>
+                                            {lockedCards[card.id || card._id] && lockedCards[card.id || card._id] !== user?.email && <div className="absolute top-2 right-2 bg-red-100 text-red-600 rounded-full p-1.5 z-10 shadow-sm border border-white" title={`Locked by ${lockedCards[card.id || card._id]}`}><window.Icon name="lock" size={14}/></div>}
+<div className="flex justify-between items-start mb-3"><div className={`w-16 h-2 rounded-full ${ {low: 'bg-blue-300', med: 'bg-yellow-400', high: 'bg-red-500'}[card.urgency?.toLowerCase() || 'low'] }`}></div><div className="opacity-0 group-hover:opacity-100 flex gap-2 transition" onClick={e => e.stopPropagation()}><button onClick={async (e) => { e.stopPropagation(); await fetch(`/api/tasks/${card.id}`, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ archived: true, auditEvent: { user: user?.email || 'System', action: 'Archived card' } }) }); setCards(cards.map(c => c.id === card.id ? { ...c, archived: true } : c)); showToast(t('alerts.card_archived'), 'success'); }} className="p-2 bg-gray-50 text-gray-400 hover:text-red-500 rounded-xl hover:bg-red-50" title={t('actions.archive')}><window.Icon name="archive" size={14}/></button><button onClick={(e) => { e.stopPropagation(); moveCard(card.id, -1); }} className="p-2 bg-gray-50 rounded-xl hover:bg-gray-100"><window.Icon name="arrow-left" size={14}/></button><button onClick={(e) => { e.stopPropagation(); moveCard(card.id, 1); }} className="p-2 bg-gray-50 rounded-xl hover:bg-gray-100"><window.Icon name="arrow-right" size={14}/></button></div></div>
+                                            {card.epic && <div className="inline-block px-2 py-0.5 bg-purple-100 text-purple-700 text-[8px] font-black uppercase tracking-widest rounded mb-2 shadow-sm border border-purple-200">{card.epic}</div>}
                                             <h4 className="font-black text-base leading-tight mb-3 tracking-tight">{card.title}</h4>
                                             {card.dueDate && <div className="inline-flex items-center gap-2.5 bg-red-50 text-red-500 px-3 py-1.5 rounded-full text-[8px] font-black uppercase tracking-widest mb-3 border-2 border-red-100 shadow-lg shadow-red-100"><window.Icon name="calendar" size={14} /> {card.dueDate}</div>}
                                             {card.checklist?.length > 0 && <div className="w-full bg-gray-50 h-1.5 rounded-full overflow-hidden mb-3 border border-gray-100"><div className="bg-emerald-400 h-fit max-h-full transition-all duration-1000" style={{ width: `${(card.checklist.filter(i => i && i.done).length / card.checklist.length) * 100}%` }}></div></div>}
@@ -681,7 +720,17 @@ window.WorkspaceView = ({ workspace, onBack, user, onLogout, onThemeChange, them
                     </dnd.DragDropContext>
                 </main>
             ) : tab === 'vault' ? <window.VaultTab workspace={workspace} user={user} onUpdate={updateWorkspace} onUpdateUser={onUpdateUser} /> : tab === 'docs' ? <window.DocTab workspaceId={workspace?.id || workspace?._id} user={user} /> : null}
-            {editingCard && <window.CardModal card={editingCard} user={user} members={members} allUsers={allUsers} onClose={() => setEditingCard(null)} onSave={async (upd) => { const cardId = editingCard.id || editingCard._id; const res = await fetch(`/api/tasks/${cardId}`, { method: "PUT", headers: {"Content-Type":"application/json"}, body: JSON.stringify(upd) }); const updatedTask = await res.json(); setCards(prev => (prev || []).map(c => (c && (c.id === cardId || c._id === cardId)) ? updatedTask : c)); setEditingCard(null); }} onDelete={async (id) => { await fetch(`/api/tasks/${id}`, { method: "DELETE" }); setCards(prev => (prev || []).filter(c => c && (c.id !== id && c._id !== id))); setEditingCard(null); }} />}
+            {editingCard && <window.CardModal card={editingCard} user={user} members={members} allUsers={allUsers} socket={socketRef.current} workspaceId={workspace.id || workspace._id} onClose={() => setEditingCard(null)} onSave={async (upd) => { 
+                const cardId = editingCard.id || editingCard._id; 
+                const res = await fetch(`/api/tasks/${cardId}`, { method: "PUT", headers: {"Content-Type":"application/json"}, body: JSON.stringify(upd) }); 
+                const updatedTask = await res.json(); 
+                if (!res.ok) {
+                    showAlert(updatedTask.error || "Failed to update task", "Update Error");
+                    return;
+                }
+                setCards(prev => (prev || []).map(c => (c && (c.id === cardId || c._id === cardId)) ? updatedTask : c)); 
+                setEditingCard(null); 
+            }} onDelete={async (id) => { await fetch(`/api/tasks/${id}`, { method: "DELETE" }); setCards(prev => (prev || []).filter(c => c && (c.id !== id && c._id !== id))); setEditingCard(null); }} />}
             
             
             {/* Emoji Spam Animation */}
