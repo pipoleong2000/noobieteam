@@ -172,8 +172,8 @@ window.VaultTab = function({ workspace, user, onUpdate, onUpdateUser }) {
             <window.GlobalModal isOpen={isAdding} onClose={() => setIsAdding(false)} title={t('actions.encrypt_archive')} footer={<button onClick={addSecret} className="bg-black text-white px-8 py-3 rounded-full text-[9px] font-black uppercase tracking-widest shadow-xl">{t('actions.encrypt_archive')}</button>}>
                 <div className="space-y-4">
                     <input className="w-full p-4 bg-gray-50 rounded-2xl border border-gray-100 outline-none text-xs font-bold" placeholder={t('labels.service_label')} value={newSecret.service} onChange={e => setNewSecret({...newSecret, service: e.target.value})} />
-                    <input className="w-full p-4 bg-gray-50 rounded-2xl border border-gray-100 outline-none text-xs font-bold" placeholder={t('labels.account_identifier')} value={newSecret.account} onChange={e => setNewSecret({...newSecret, account: e.target.value})} />
                     <input className="w-full p-4 bg-gray-50 rounded-2xl border border-gray-100 outline-none text-xs font-bold" placeholder={t('labels.url') || "URL (Optional)"} value={newSecret.url} onChange={e => setNewSecret({...newSecret, url: e.target.value})} />
+                    <input className="w-full p-4 bg-gray-50 rounded-2xl border border-gray-100 outline-none text-xs font-bold" placeholder={t('labels.account_identifier')} value={newSecret.account} onChange={e => setNewSecret({...newSecret, account: e.target.value})} />
                     <input className="w-full p-4 bg-gray-50 rounded-2xl border border-gray-100 outline-none text-xs font-bold" type="password" placeholder={t('labels.password')} value={newSecret.password} onChange={e => setNewSecret({...newSecret, password: e.target.value})} />
                 </div>
             </window.GlobalModal>

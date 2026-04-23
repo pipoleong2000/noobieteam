@@ -14,3 +14,7 @@
 - **Date:** 2026-04-23
   **Action:** Fixed AI Configuration read-only mapping, Vault schema UI order, and stripped bad timestamp concurrency.
   **Outcome:** The previous timestamp fallback for `updatedAt` was fundamentally flawed due to millisecond discrepancies between React state parsing and MongoDB document limits, creating false positive conflict errors for single users. I purged the `updatedAt` checking, ensuring the backend relies purely on Mongoose's explicit `__v` optimistic locking, entirely stopping the false alerts. Fixed `VaultTab.jsx` DOM order for Account/URL inputs, and optimized `WorkspaceView.jsx` to load `.env` variables correctly and keep the AI settings modal strict read-only.
+
+- **Date:** 2026-04-23
+  **Action:** Hotfix VaultTab input order
+  **Outcome:** The Tester flagged that the previous commit did not successfully swap the DOM order of the Vault input fields. Re-applied the fix to `VaultTab.jsx` ensuring that the `URL` input field correctly precedes the `Account Identifier` field in the "Create Secret" form layout, finalizing the Boss's exact UX requirements.
