@@ -16,6 +16,9 @@ router.post('/workspaces', async (req, res) => {
   try {
     // Expected: { name, color, avatar, archived, createdAt, members: [email] }
     const ws = new Workspace(req.body);
+    if (!ws.slug) {
+        ws.slug = req.body.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') + '-' + Math.random().toString(36).substr(2, 4);
+    }
     // Initialize default columns
     ws.columns = [{ id: 'todo', title: 'To Do', order: 0 }, { id: 'inprog', title: 'In Progress', order: 1 }, { id: 'done', title: 'Done', order: 2 }];
     await ws.save();
@@ -68,6 +71,26 @@ router.put('/workspaces/:wsId/tasks/bulk-move', async (req, res) => {
     const { cardIds, targetColumn } = req.body;
     if (!cardIds || !Array.isArray(cardIds) || !targetColumn) return res.status(400).json({ error: 'cardIds array and targetColumn required' });
     await Task.updateMany({ _id: { $in: cardIds }, workspaceId: req.params.wsId }, { $set: { columnId: targetColumn, expiredAlertAcknowledged: true } });
+    res.json({ success: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+
+router.put('/workspaces/:wsId/tasks/bulk-order', async (req, res) => {
+  try {
+    const { updates } = req.body; // updates = [{ id: 'taskId', orderIndex: 0, columnId: 'todo' }, ...]
+    if (!updates || !Array.isArray(updates)) return res.status(400).json({ error: 'updates array required' });
+    
+    const bulkOps = updates.map(u => ({
+        updateOne: {
+            filter: { _id: u.id, workspaceId: req.params.wsId },
+            update: { $set: { orderIndex: u.orderIndex, columnId: u.columnId } }
+        }
+    }));
+    
+    if (bulkOps.length > 0) {
+        await Task.bulkWrite(bulkOps);
+    }
     res.json({ success: true });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });

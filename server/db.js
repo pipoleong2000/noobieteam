@@ -43,6 +43,7 @@ const userSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 const workspaceSchema = new mongoose.Schema({
+  slug: { type: String, sparse: true, unique: true },
   name: { type: String, required: true },
   color: String,
   avatar: String,
@@ -78,6 +79,7 @@ const taskSchema = new mongoose.Schema({
   dueDate: Date,
   expiredAlertAcknowledged: { type: Boolean, default: false },
   order: Number,
+  orderIndex: Number,
   assignees: [{ type: String }],
   checklist: [{
     id: String,

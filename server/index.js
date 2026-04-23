@@ -99,6 +99,10 @@ app.delete('/api/workspaces/:id', async (req, res) => {
 // Use other API routes
 app.use('/api', apiRoutes);
         
+app.get('/workspace/*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../client/index.html'));
+});
+
 // Dynamic Catch-All Route for Frontend Public Documentation
 app.get('/docs/*', (req, res) => {
     res.sendFile(path.join(__dirname, '../client/index.html'));

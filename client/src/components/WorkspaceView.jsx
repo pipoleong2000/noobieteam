@@ -11,12 +11,13 @@ window.WorkspaceView = ({ workspace, onBack, user, onLogout, onThemeChange, them
     const [loading, setLoading] = React.useState(true);
     const [expiredCards, setExpiredCards] = React.useState([]);
     const [showExpiredModal, setShowExpiredModal] = React.useState(false);
+    const [hasShownWelcome, setHasShownWelcome] = React.useState(false);
     const [selectedMoveCol, setSelectedMoveCol] = React.useState('');
     const { t } = window.useTranslation ? window.useTranslation() : { t: k => k };
 
     React.useEffect(() => {
         fetch(`/api/workspaces/${workspace.id}/tasks`).then(r => r.json()).then(data => { 
-            const validData = Array.isArray(data) ? data : [];
+            const validData = Array.isArray(data) ? data.sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0)) : [];
             setCards(validData); 
             setLoading(false); 
             
@@ -35,6 +36,21 @@ window.WorkspaceView = ({ workspace, onBack, user, onLogout, onThemeChange, them
                 setExpiredCards(expired);
                 setShowExpiredModal(true);
                 setSelectedMoveCol(columns[0]?.id || 'todo');
+            }
+            
+            if (!hasShownWelcome && user?.email) {
+                const myCards = validData.filter(c => c && !c.archived && c.assignees && c.assignees.includes(user.email));
+                const expiringCount = myCards.filter(c => {
+                    if (!c.dueDate) return false;
+                    const due = new Date(c.dueDate);
+                    const diffDays = (due - now) / (1000 * 60 * 60 * 24);
+                    return diffDays >= 0 && diffDays <= 3;
+                }).length;
+                const backlogCount = myCards.filter(c => c.columnId === 'backlog' || c.col === 'backlog').length;
+                
+                // Show toast with stats
+                showToast(t('alerts.welcome_stats', { total: myCards.length, expiring: expiringCount, backlog: backlogCount }) || `Workspace loaded: You have ${myCards.length} assigned cards (${expiringCount} expiring soon, ${backlogCount} in backlog).`);
+                setHasShownWelcome(true);
             }
         }).catch(console.error);
         fetch('/api/users').then(r => r.json()).then(data => setAllUsers(Array.isArray(data) ? data : [])).catch(console.error);
@@ -602,8 +618,17 @@ window.WorkspaceView = ({ workspace, onBack, user, onLogout, onThemeChange, them
                                     const globalInsertIdx = newCards.findIndex(c => c.id === anchorCardId);
                                     newCards.splice(globalInsertIdx, 0, draggedCard);
                                 }
+                                
+                                // Recalculate order index for the destination column
+                                const destColUpdatedCards = newCards.filter(c => c && c.columnId === destination.droppableId && !c.archived);
+                                const bulkUpdates = destColUpdatedCards.map((c, i) => {
+                                    c.orderIndex = i;
+                                    return { id: c.id || c._id, orderIndex: i, columnId: c.columnId };
+                                });
+                                
                                 setCards(newCards);
                                 await fetch(`/api/tasks/${draggableId}`, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ columnId: destination.droppableId, auditEvent: { user: user?.email || 'System', action: 'Moved card to ' + destination.droppableId } }) });
+                                await fetch(`/api/workspaces/${workspace.id || workspace._id}/tasks/bulk-order`, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ updates: bulkUpdates }) });
                             }}>
                             <div className="flex flex-col md:flex-row gap-6 flex-1 overflow-hidden h-full w-full">
                         {showBacklog && (

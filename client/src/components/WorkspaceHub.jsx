@@ -1,9 +1,10 @@
-window.WorkspaceHub = ({ onSelect, onLogout, user, theme, onThemeChange, onUpdateUser }) => {
+window.WorkspaceHub = ({ onSelect, onLogout, user, theme, onThemeChange, onUpdateUser, urlWsSlug }) => {
             const { showPrompt, showConfirm } = window.useModals();
             const { showToast } = window.useToasts();
             const { t } = window.useTranslation ? window.useTranslation() : { t: k => k };
             const [workspaces, setWorkspaces] = React.useState([]);
             const [loading, setLoading] = React.useState(true);
+    const onSelectRef = React.useRef(onSelect); React.useEffect(() => { onSelectRef.current = onSelect; }, [onSelect]);
             const [pinPrompt, setPinPrompt] = React.useState({ isOpen: false, pin: '', confirm: '' });
             const [pinError, setPinError] = React.useState('');
             const [pinLoading, setPinLoading] = React.useState(false);
@@ -47,7 +48,19 @@ window.WorkspaceHub = ({ onSelect, onLogout, user, theme, onThemeChange, onUpdat
 
 
             React.useEffect(() => {
-                fetch('/api/workspaces').then(r => r.json()).then(ws => { setWorkspaces(Array.isArray(ws) ? ws : []); setLoading(false); }).catch(err => { console.error(err); setWorkspaces([]); setLoading(false); });
+                fetch('/api/workspaces').then(r => r.json()).then(ws => { 
+                    const validWs = Array.isArray(ws) ? ws : [];
+                    setWorkspaces(validWs); 
+                    setLoading(false); 
+                    
+                    if (urlWsSlug) {
+                        const targetWs = validWs.find(w => w.slug === urlWsSlug || w._id === urlWsSlug || w.id === urlWsSlug);
+                        if (targetWs) {
+                            // Delay slightly to let hub render logic finish, then auto-select
+                            setTimeout(() => onSelect(targetWs), 100);
+                        }
+                    }
+                }).catch(err => { console.error(err); setWorkspaces([]); setLoading(false); });
             }, []);
 
             // No longer save to localStorage, only API calls

@@ -496,6 +496,8 @@ window.Main = () => {
     };
 
     const path = window.location.pathname;
+    const isWorkspaceUrl = path.startsWith('/workspace/');
+    const urlWsSlug = isWorkspaceUrl ? path.split('/')[2] : null;
     const isPublicDocs = path.startsWith('/docs/');
     let publicWsPath = '';
     let publicFolderName = '';
@@ -514,8 +516,8 @@ window.Main = () => {
                 <window.ToastContext.Provider value={{ showToast }}>
                 {isPublicDocs ? <window.PublicDocsView wsPath={publicWsPath} folderName={publicFolderName} /> :
                 !user ? <window.AuthScreen onAuthSuccess={setUser} /> :
-                 !ws ? <window.WorkspaceHub user={user} onLogout={() => { setUser(null); showToast(t('alerts.session_ended') || "Session ended. 👋"); }} onSelect={setWs} onThemeChange={setTheme} theme={theme} onUpdateUser={setUser} /> :
-                 <window.WorkspaceView workspace={ws} onBack={() => setWs(null)} user={user} onLogout={() => { setWs(null); setUser(null); showToast(t('alerts.session_ended') || "Session ended. 👋"); }} onThemeChange={setTheme} theme={theme} onUpdateUser={setUser} isJukeboxActive={!!player.url && !player.isMinimized} />}
+                 !ws ? <window.WorkspaceHub user={user} onLogout={() => { setUser(null); showToast("Session ended. 👋"); }} onSelect={(selectedWs) => { window.history.pushState({}, '', '/workspace/' + (selectedWs.slug || selectedWs.id || selectedWs._id)); setWs(selectedWs); }} onThemeChange={setTheme} theme={theme} onUpdateUser={setUser} urlWsSlug={urlWsSlug} /> :
+                 <window.WorkspaceView workspace={ws} onBack={() => { window.history.pushState({}, '', '/'); setWs(null); }} user={user} onLogout={() => { setWs(null); setUser(null); showToast(t('alerts.session_ended') || "Session ended. 👋"); }} onThemeChange={setTheme} theme={theme} onUpdateUser={setUser} isJukeboxActive={!!player.url && !player.isMinimized} />}
                 <window.FloatingJukebox />
                 <div className="toast-container">{toasts.map(t => <window.Toast key={t.id} message={t.message} onRemove={() => removeToast(t.id)} />)}</div>
                 {modalState.isOpen && (
