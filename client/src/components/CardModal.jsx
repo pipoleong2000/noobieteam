@@ -22,7 +22,7 @@ window.CardModal = ({ card, user, members, allUsers, onClose, onSave, onDelete, 
         const dStr = String(card.dueDate);
         return dStr.includes('T') ? dStr.split('T')[0] : dStr;
     });
-    const [urgency, setUrgency] = React.useState(card.urgency || 'low');
+    const [urgency, setUrgency] = React.useState(card.urgency || 'LOW');
     const [epic, setEpic] = React.useState(card.epic || '');
     const [checklist, setChecklist] = React.useState(card.checklist || []);
     const [assignees, setAssignees] = React.useState(card.assignees || []);
@@ -111,7 +111,7 @@ window.CardModal = ({ card, user, members, allUsers, onClose, onSave, onDelete, 
         return temp.innerHTML;
     };
 
-    const colors = { low: 'bg-blue-400', med: 'bg-yellow-400', high: 'bg-red-500' };
+    const colors = { LOW: 'bg-blue-400', MED: 'bg-yellow-400', HIGH: 'bg-red-500' };
 
     const handleToggleCheck = React.useCallback((id) => {
         setChecklist(prev => {
@@ -164,8 +164,8 @@ window.CardModal = ({ card, user, members, allUsers, onClose, onSave, onDelete, 
                         <div><label className="block text-sm font-black text-black uppercase tracking-widest mb-3">{t('labels.epic_tag') || 'Epic Tag'}</label><input className="w-full p-4 bg-gray-50 rounded-2xl border border-gray-100 outline-none text-[11px] font-black" placeholder="e.g. Q4 Release" value={epic} onChange={e => setEpic(e.target.value)} /></div>
                         <div><label className="block text-sm font-black text-black uppercase tracking-widest mb-3">{t('labels.priority')}</label>
                             <div className="flex gap-1.5 p-1 bg-gray-50 rounded-2xl border border-gray-100">
-                                {['low', 'med', 'high'].map(lvl => (
-                                    <button key={lvl} onClick={() => setUrgency(lvl)} className={`flex-1 py-2 rounded-xl text-[8px] font-black uppercase tracking-widest transition ${urgency === lvl ? colors[lvl] + ' text-white shadow-md' : 'text-gray-400 hover:bg-white'}`}>{t(`labels.${lvl}`)}</button>
+                                {['LOW', 'MED', 'HIGH'].map(lvl => (
+                                    <button key={lvl} onClick={() => setUrgency(lvl)} className={`flex-1 py-2 rounded-xl text-[8px] font-black uppercase tracking-widest transition ${urgency === lvl ? colors[lvl] + ' text-white shadow-md' : 'text-gray-400 hover:bg-white'}`}>{t(`labels.${lvl.toLowerCase()}`)}</button>
                                 ))}
                             </div>
                         </div>
