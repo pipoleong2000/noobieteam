@@ -161,7 +161,9 @@
     "mission_chatter_title": "Mission Chatter",
     "status_col": "Status",
     "url": "URL (Optional)",
-    "system": "System"
+    "system": "System",
+    "attachment_preview": "Attachment Preview",
+    "new_task": "New Task"
   },
   "alerts": {
     "welcome_back": "Welcome back, {name}! 🚀",
@@ -229,6 +231,7 @@
     "overwrite_conflict": "Conflict: This card was modified by another user recently. Please refresh to avoid overwriting their work.",
     "no_communication": "No communication logged.",
     "no_archived_cards": "No archived cards in this column.",
-    "attachment_preview": "Attachment Preview"
+    "attachment_preview": "Attachment Preview",
+    "welcome_stats": "Welcome! You have {total} assigned tasks, {expiring} expiring soon, and {backlog} in backlog."
   }
 }

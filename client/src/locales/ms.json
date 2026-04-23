@@ -142,7 +142,10 @@
     "leave_workspace_title": "Tinggalkan Ruang Kerja",
     "invite_user_title": "Jemput Pengguna",
     "master_pin": "PIN Utama",
-    "url": "URL (Pilihan)"
+    "url": "URL (Pilihan)",
+    "mission_chatter_title": "Sembang Misi",
+    "attachment_preview": "Pratonton Lampiran",
+    "new_task": "Tugasan Baru"
   },
   "alerts": {
     "welcome_back": "Selamat kembali, {name}! 🚀",
@@ -201,6 +204,7 @@
     "conflict": "Konflik Tindihan",
     "overwrite_conflict": "Konflik: Kad ini telah diubah oleh pengguna lain baru-baru ini. Sila segar semula untuk mengelakkan menindih kerja mereka.",
     "no_communication": "Tiada log komunikasi.",
-    "no_archived_cards": "Tiada kad diarkibkan dalam lajur ini."
+    "no_archived_cards": "Tiada kad diarkibkan dalam lajur ini.",
+    "welcome_stats": "Selamat datang! Anda mempunyai {total} tugasan yang diberikan, {expiring} akan tamat tempoh tidak lama lagi, dan {backlog} dalam tunggakan."
   }
 }

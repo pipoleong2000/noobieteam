@@ -142,7 +142,10 @@
     "leave_workspace_title": "ワークスペースを離れる",
     "invite_user_title": "ユーザーを招待",
     "master_pin": "マスターPIN",
-    "url": "URL (任意)"
+    "url": "URL (任意)",
+    "mission_chatter_title": "ミッションチャット",
+    "attachment_preview": "添付ファイルのプレビュー",
+    "new_task": "新しいタスク"
   },
   "alerts": {
     "welcome_back": "お帰りなさい、{name}さん！🚀",
@@ -201,6 +204,7 @@
     "conflict": "上書きの競合",
     "overwrite_conflict": "競合：このカードは最近別のユーザーによって変更されました。変更内容を上書きしないよう、ページを更新してください。",
     "no_communication": "通信ログはありません。",
-    "no_archived_cards": "この列にアーカイブされたカードはありません。"
+    "no_archived_cards": "この列にアーカイブされたカードはありません。",
+    "welcome_stats": "ようこそ！ {total} 件の割り当てられたタスク、 {expiring} 件の期限間近、 {backlog} 件のバックログがあります。"
   }
 }

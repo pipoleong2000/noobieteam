@@ -163,7 +163,9 @@
     "mission_chatter_title": "任务聊天",
     "status_col": "状态",
     "url": "URL (可选)",
-    "system": "系统"
+    "system": "系统",
+    "attachment_preview": "附件预览",
+    "new_task": "新任务"
   },
   "alerts": {
     "welcome_back": "欢迎回来，{name}！🚀",
@@ -231,6 +233,7 @@
     "overwrite_conflict": "冲突：此卡片最近已被其他用户修改。请刷新以避免覆盖他们的工作。",
     "no_communication": "尚无评论记录。",
     "no_archived_cards": "此列中没有已归档的卡片。",
-    "attachment_preview": "附件预览"
+    "attachment_preview": "附件预览",
+    "welcome_stats": "欢迎！您有 {total} 个指派任务，{expiring} 个即将过期，以及 {backlog} 个在待办清单中。"
   }
 }

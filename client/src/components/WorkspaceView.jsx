@@ -527,7 +527,7 @@ User Request: ${aiInput}` : aiInput;
     }
     
     return (
-        <div className="min-h-screen flex flex-col bg-white overflow-hidden text-black">
+        <div className="h-screen flex flex-col bg-white overflow-hidden text-black">
             <nav className={`h-16 px-6 flex items-center justify-between sticky top-0 z-[120] transition-colors duration-500 shadow-sm ${headerClass}`}>
                 <div className="flex items-center gap-6">
                     <button onClick={() => showConfirm(t('actions.exit_workspace') || 'Exit Workspace', t('alerts.confirm_exit_workspace') || 'Are you sure you want to return to the workspace selection hub?', onBack)} className={`p-2.5 hover:bg-black/5 rounded-xl transition ${isDarkHeader ? 'text-white' : 'text-black'}`}><window.Icon name="arrow-left" size={20}/></button>

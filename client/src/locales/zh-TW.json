@@ -142,7 +142,10 @@
     "leave_workspace_title": "離開工作區",
     "invite_user_title": "邀請用戶",
     "master_pin": "主 PIN",
-    "url": "URL (可選)"
+    "url": "URL (可選)",
+    "mission_chatter_title": "任務聊天",
+    "attachment_preview": "附件預覽",
+    "new_task": "新任務"
   },
   "alerts": {
     "welcome_back": "歡迎回來，{name}！🚀",
@@ -201,6 +204,7 @@
     "conflict": "覆蓋衝突",
     "overwrite_conflict": "衝突：此卡片最近已被其他用戶修改。請刷新以避免覆蓋他們的工作。",
     "no_communication": "尚無評論記錄。",
-    "no_archived_cards": "此列中沒有已歸檔的卡片。"
+    "no_archived_cards": "此列中沒有已歸檔的卡片。",
+    "welcome_stats": "歡迎！您有 {total} 個指派任務，{expiring} 個即將過期，以及 {backlog} 個在待辦清單中。"
   }
 }
