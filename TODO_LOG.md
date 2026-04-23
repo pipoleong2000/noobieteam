@@ -6,3 +6,7 @@
 - **Date:** 2026-04-23
   **Action:** Enforced Strict Kanban Column Layout and Fixed Root Scrolling.
   **Outcome:** The Boss reported that the previous update still allowed full-page scrolling, ruining the UX. I identified that while the outer `<div className="h-screen flex flex-col...">` container in `WorkspaceView.jsx` was correctly preventing standard scroll, the global `<body>` tag needed an explicit `overflow-hidden` constraint to kill aggressive mobile/touchpad scroll-bleeding. Added `<body class="overflow-hidden">` to `index.html`. Furthermore, within `WorkspaceView.jsx`, I forced the column `<main>` and `dnd.Droppable` row-containers to tightly adhere to `h-full max-h-full overflow-y-hidden`, delegating scrolling exclusively to the inner `.droppable-column` card wrappers.
+
+- **Date:** 2026-04-23
+  **Action:** Aggressive Scroll and Translation Verification
+  **Outcome:** Verified that the main page does not scroll vertically by auditing the global CSS and React container hierarchy. Identified and fixed a layout bug where 'items-start' on the Kanban board container allowed columns to expand beyond the viewport; changed to 'items-stretch' to force independent column scrolling. Additionally, hardened the translation engine in 'App.jsx' to use 'replaceAll' for multi-variable interpolation and return 'null' on missing keys, resolving the issue where the raw 'welcome_stats' label was visible instead of the human-readable fallback message.
