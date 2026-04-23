@@ -583,7 +583,7 @@ User Request: ${aiInput}` : aiInput;
                 <button onClick={() => setTab('docs')} className={`flex-1 py-2 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition ${tab === 'docs' ? 'bg-white shadow-md text-black' : 'text-gray-500 opacity-60'}`}>{t('tabs.docs')}</button>
             </div>
             {tab === 'board' ? (
-                <main className="p-4 md:p-8 flex-1 overflow-x-auto overflow-y-hidden no-scrollbar flex flex-col animate-fade-in">
+                <main className="p-4 md:p-8 flex-1 overflow-x-auto overflow-y-hidden no-scrollbar flex flex-col animate-fade-in h-full">
                     <header className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 md:mb-12 gap-4 md:gap-6">
                         <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-8 w-full overflow-hidden">
                             <h1 className="text-2xl md:text-4xl font-black tracking-tighter truncate">{workspace.name}</h1>
@@ -695,7 +695,7 @@ User Request: ${aiInput}` : aiInput;
                         )}
                         <dnd.Droppable droppableId="all-columns" direction="horizontal" type="COLUMN">
                         {(providedBoard) => (
-                            <div className="flex flex-col md:flex-row gap-6 md:gap-10 flex-1 items-start h-full overflow-x-auto overflow-y-auto md:overflow-y-hidden no-scrollbar w-full" {...providedBoard.droppableProps} ref={providedBoard.innerRef}>
+                            <div className="flex flex-col md:flex-row gap-6 md:gap-10 flex-1 items-start h-full overflow-x-auto overflow-y-hidden no-scrollbar w-full" {...providedBoard.droppableProps} ref={providedBoard.innerRef}>
                                 {columns.filter(col => col.id !== 'backlog').map((col, index) => (
                                     <dnd.Draggable key={String(col.id || `col-${index}`)} draggableId={String(col.id || `col-${index}`)} index={index}>
                                         {(providedCol) => (
