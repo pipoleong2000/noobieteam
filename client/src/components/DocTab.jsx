@@ -186,8 +186,83 @@ window.DocTab = ({ workspaceId, user }) => {
 
     const toggleFolder = (id) => setExpandedFolders(prev => ({ ...prev, [id]: !prev[id] }));
 
+    const fileInputRef = React.useRef(null);
+    
+    const importPostmanCollection = async (file) => {
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            try {
+                const collection = JSON.parse(e.target.result);
+                const name = collection.info?.name || 'Postman Import';
+                
+                // Create Folder
+                const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+                const folderRes = await fetch(`/api/workspaces/${workspaceId}/folders`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ name, slug }) });
+                if (!folderRes.ok) throw new Error("Failed to create folder");
+                const folder = await folderRes.json();
+                const folderId = folder._id || folder.id;
+                
+                setFolders(prev => [...prev, { ...folder, id: folderId }]);
+                setExpandedFolders(prev => ({ ...prev, [folderId]: true }));
+                
+                const items = collection.item || [];
+                const processItem = async (item, currentFolderId) => {
+                    if (item.request) {
+                        // Extract request
+                        const req = item.request;
+                        const method = req.method || 'GET';
+                        const url = req.url?.raw || (typeof req.url === 'string' ? req.url : '');
+                        const headers = (req.header || []).map(h => ({ key: h.key, value: h.value }));
+                        const queryParams = (req.url?.query || []).map(q => ({ key: q.key, value: q.value }));
+                        let body = '';
+                        if (req.body?.mode === 'raw') body = req.body.raw;
+                        
+                        const newDoc = { 
+                            title: item.name || 'API Endpoint', 
+                            type: 'API', 
+                            content: item.request.description || '', 
+                            folderId: currentFolderId,
+                            apiSpec: { method, url, headers, queryParams, body, examples: [] } 
+                        };
+                        
+                        const docRes = await fetch(`/api/workspaces/${workspaceId}/docs`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(newDoc) });
+                        const savedDoc = await docRes.json();
+                        return { ...savedDoc, id: savedDoc.id || savedDoc._id };
+                    } else if (item.item) {
+                        // Sub-folder handling could go here, but for now we flat map to the single folder
+                        let importedDocs = [];
+                        for (let subItem of item.item) {
+                            const subDocs = await processItem(subItem, currentFolderId);
+                            importedDocs = importedDocs.concat(Array.isArray(subDocs) ? subDocs : [subDocs]);
+                        }
+                        return importedDocs;
+                    }
+                    return [];
+                };
+                
+                let allImported = [];
+                for (let item of items) {
+                    const imported = await processItem(item, folderId);
+                    allImported = allImported.concat(Array.isArray(imported) ? imported : [imported]);
+                }
+                
+                setDocs(prev => [...prev, ...allImported]);
+                showToast("Postman Collection imported successfully! 🚀");
+            } catch (err) {
+                console.error(err);
+                showAlert("Failed to parse or import Postman Collection: " + err.message, "Import Error");
+            }
+            if (fileInputRef.current) fileInputRef.current.value = '';
+        };
+        reader.readAsText(file);
+    };
+
     const addDoc = async (type) => {
-        showPrompt(`New ${type === 'API' ? 'Endpoint' : 'Document'}`, 'Enter title:', async (title) => {
+        showPrompt(
+            `New ${type === 'API' ? 'Endpoint' : 'Document'}`, 
+            type === 'API' ? 'Enter title (Or click Import Postman Collection below):' : 'Enter title:', 
+            async (title) => {
             if (!title) return;
             const newDoc = { title, type, content: '', apiSpec: { method: 'GET', url: '', headers: [], queryParams: [], body: '', examples: [] } };
             const res = await fetch(`/api/workspaces/${workspaceId}/docs`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(newDoc) });
@@ -231,6 +306,8 @@ window.DocTab = ({ workspaceId, user }) => {
                         </button>
                     )}
                     <div className="flex gap-2">
+                        <input type="file" ref={fileInputRef} className="hidden" accept=".json" onChange={(e) => importPostmanCollection(e.target.files[0])} />
+                        <button onClick={() => fileInputRef.current && fileInputRef.current.click()} className="p-2 bg-orange-50 hover:bg-orange-100 rounded-lg transition text-orange-500 cursor-pointer" title="Import Postman Collection"><window.Icon name="upload-cloud" size={16} /></button>
                         <button onClick={addFolder} className="p-2 bg-gray-50 hover:bg-gray-100 rounded-lg transition text-purple-500 cursor-pointer" title="New Folder"><window.Icon name="folder-plus" size={16} /></button>
                         <button onClick={() => addDoc('TEXT')} className="p-2 bg-gray-50 hover:bg-gray-100 rounded-lg transition text-blue-500 cursor-pointer" title="New Document"><window.Icon name="file-text" size={16} /></button>
                         <button onClick={() => addDoc('API')} className="p-2 bg-gray-50 hover:bg-gray-100 rounded-lg transition text-emerald-500 cursor-pointer" title="New API Endpoint"><window.Icon name="zap" size={16} /></button>

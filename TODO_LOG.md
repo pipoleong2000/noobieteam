@@ -10,3 +10,7 @@
 - **Date:** 2026-04-23
   **Action:** Aggressive Scroll and Translation Verification
   **Outcome:** Verified that the main page does not scroll vertically by auditing the global CSS and React container hierarchy. Identified and fixed a layout bug where 'items-start' on the Kanban board container allowed columns to expand beyond the viewport; changed to 'items-stretch' to force independent column scrolling. Additionally, hardened the translation engine in 'App.jsx' to use 'replaceAll' for multi-variable interpolation and return 'null' on missing keys, resolving the issue where the raw 'welcome_stats' label was visible instead of the human-readable fallback message.
+
+- **Date:** 2026-04-24
+  **Action:** Built Postman Collection Import Tool.
+  **Outcome:** The Boss requested a massive productivity enhancement to the Docs tab allowing users to bulk-import Postman JSON payload structures. I added an "Import Postman Collection" (`upload-cloud`) button in the Document hierarchy header. I utilized the `FileReader` API to parse the uploaded `.json` on the client. It dynamically reads the `collection.info.name` to spawn a new Workspace Folder, iterates via a recursive Promise pipeline across the entire `collection.item` array structure, securely extracts API Methods, URLs, dynamic Parameters, Headers, and Raw Body payloads, and maps them to our internal `apiSpec` data model before sequentially pushing all creation events natively to the backend `/api/workspaces/:wsId/docs` endpoint.
