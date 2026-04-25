@@ -128,6 +128,7 @@ window.DocTab = ({ workspaceId, user }) => {
     const [docs, setDocs] = React.useState([]);
     const [folders, setFolders] = React.useState([]);
     const [selectedDocId, setSelectedDocId] = React.useState(null);
+    const [selectedFolderId, setSelectedFolderId] = React.useState(null);
     const [expandedFolders, setExpandedFolders] = React.useState({});
     const [loading, setLoading] = React.useState(true);
     const [isDocEditing, setIsDocEditing] = React.useState(false);
@@ -198,7 +199,9 @@ window.DocTab = ({ workspaceId, user }) => {
                 
                 // Create Folder
                 const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-                const folderRes = await fetch(`/api/workspaces/${workspaceId}/folders`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ name, slug }) });
+                const description = collection.info?.description || '';
+                const collectionDesc = typeof collection.info?.description === 'string' ? collection.info.description : (collection.info?.description?.content || '');
+                const folderRes = await fetch(`/api/workspaces/${workspaceId}/folders`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ name, slug, description: collectionDesc }) });
                 if (!folderRes.ok) throw new Error("Failed to create folder");
                 const folder = await folderRes.json();
                 const folderId = folder._id || folder.id;
@@ -217,11 +220,13 @@ window.DocTab = ({ workspaceId, user }) => {
                         const queryParams = (req.url?.query || []).map(q => ({ key: q.key, value: q.value }));
                         let body = '';
                         if (req.body?.mode === 'raw') body = req.body.raw;
+                        else if (req.body?.mode === 'formdata') body = JSON.stringify(req.body.formdata, null, 2);
+                        else if (req.body?.mode === 'urlencoded') body = JSON.stringify(req.body.urlencoded, null, 2);
                         
                         const newDoc = { 
                             title: item.name || 'API Endpoint', 
                             type: 'API', 
-                            content: item.request.description || '', 
+                            content: typeof item.request.description === 'string' ? item.request.description : (item.request.description?.content || ''), 
                             folderId: currentFolderId,
                             apiSpec: { method, url, headers, queryParams, body, examples: [] } 
                         };
@@ -231,9 +236,22 @@ window.DocTab = ({ workspaceId, user }) => {
                         return { ...savedDoc, id: savedDoc.id || savedDoc._id };
                     } else if (item.item) {
                         // Sub-folder handling could go here, but for now we flat map to the single folder
+                        // Create subfolder
+                        const subName = item.name || 'Subfolder';
+                        const subSlug = subName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+                        const subDesc = typeof item.description === 'string' ? item.description : (item.description?.content || '');
+                        
+                        const subFolderRes = await fetch(`/api/workspaces/${workspaceId}/folders`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ name: subName, slug: subSlug, description: subDesc, parentId: currentFolderId }) });
+                        if (!subFolderRes.ok) throw new Error("Failed to create subfolder");
+                        const subFolder = await subFolderRes.json();
+                        const subFolderId = subFolder._id || subFolder.id;
+                        
+                        setFolders(prev => [...prev, { ...subFolder, id: subFolderId }]);
+                        setExpandedFolders(prev => ({ ...prev, [subFolderId]: true }));
+                        
                         let importedDocs = [];
                         for (let subItem of item.item) {
-                            const subDocs = await processItem(subItem, currentFolderId);
+                            const subDocs = await processItem(subItem, subFolderId);
                             importedDocs = importedDocs.concat(Array.isArray(subDocs) ? subDocs : [subDocs]);
                         }
                         return importedDocs;
@@ -290,7 +308,8 @@ window.DocTab = ({ workspaceId, user }) => {
         });
     };
 
-    const activeDoc = docs.find(d => (d.id === selectedDocId || d._id === selectedDocId));
+    const activeDoc = selectedDocId ? docs.find(d => (d.id === selectedDocId || d._id === selectedDocId)) : null;
+    const activeFolder = selectedFolderId && !selectedDocId ? folders.find(f => (f.id === selectedFolderId || f._id === selectedFolderId)) : null;
 
     if (loading) return <div className="p-10 text-center animate-pulse">Loading Document Nexus...</div>;
 
@@ -314,13 +333,13 @@ window.DocTab = ({ workspaceId, user }) => {
                     </div>
                 </div>
                 <div className="flex-1 overflow-y-auto p-4 space-y-1">
-                    {folders.map(folder => {
+                    {folders.filter(f => !f.parentId).map(folder => {
                         const folderId = folder.id || folder._id;
                         const isExpanded = expandedFolders[folderId];
                         const folderDocs = docs.filter(d => d.folderId === folderId);
                         return (
                             <div key={folderId} className="mb-2">
-                                <div className="flex items-center justify-between p-2 rounded-xl hover:bg-gray-50 cursor-pointer group" onClick={() => toggleFolder(folderId)}>
+                                <div className={`flex items-center justify-between p-2 rounded-xl cursor-pointer group transition ${selectedFolderId === folderId && !selectedDocId ? 'bg-blue-50' : 'hover:bg-gray-50'}`} onClick={() => { toggleFolder(folderId); setSelectedFolderId(folderId); setSelectedDocId(null); setShowMobileSidebar(false); }}>
                                     <div className="flex items-center gap-2">
                                         <window.Icon name={isExpanded ? "folder-open" : "folder"} size={16} className="text-gray-400" />
                                         <span className="text-xs font-black text-gray-700">{folder.name}</span>
@@ -332,6 +351,38 @@ window.DocTab = ({ workspaceId, user }) => {
                                 </div>
                                 {isExpanded && (
                                     <div className="pl-6 mt-1 space-y-1">
+                                        {folders.filter(sub => sub.parentId === folderId).map(sub => (
+                                            <div key={sub.id || sub._id} className="mb-1">
+                                                <div className="flex items-center justify-between p-2 rounded-xl hover:bg-gray-50 cursor-pointer group" onClick={() => toggleFolder(sub.id || sub._id)}>
+                                                    <div className="flex items-center gap-2">
+                                                        <window.Icon name={expandedFolders[sub.id || sub._id] ? "folder-open" : "folder"} size={14} className="text-gray-300" />
+                                                        <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">{sub.name}</span>
+                                                    </div>
+                                                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition">
+                                                        <button onClick={(e) => { e.stopPropagation(); deleteFolder(sub.id || sub._id); }} className="p-1 text-gray-400 hover:text-red-500" title="Delete Folder"><window.Icon name="trash" size={12} /></button>
+                                                    </div>
+                                                </div>
+                                                {expandedFolders[sub.id || sub._id] && (
+                                                    <div className="pl-4 mt-1 space-y-1 border-l border-gray-100 ml-2">
+                                                        {docs.filter(d => d.folderId === (sub.id || sub._id)).map(doc => {
+                                                            const docId = doc.id || doc._id;
+                                                            return (
+                                                                <div key={docId} onClick={() => { setSelectedDocId(docId); setShowMobileSidebar(false); }} className={`group flex items-center justify-between p-2 rounded-xl cursor-pointer transition ${selectedDocId === docId ? 'bg-blue-50 text-blue-600' : 'hover:bg-gray-50 text-gray-600'}`}>
+                                                                    <div className="flex items-center gap-2 truncate">
+                                                                        <window.Icon name={doc.type === 'API' ? "zap" : "file-text"} size={14} className={selectedDocId === docId ? 'text-blue-500' : 'text-gray-400'} />
+                                                                        <span className="text-[11px] font-bold truncate">{doc.title || t('labels.untitled')}</span>
+                                                                    </div>
+                                                                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition">
+                                                                        <button onClick={(e) => { e.stopPropagation(); moveToFolder(docId, null); }} className="p-1 text-gray-400 hover:text-gray-600" title="Move to Root"><window.Icon name="log-out" size={12} /></button>
+                                                                        <button onClick={(e) => { e.stopPropagation(); deleteDoc(docId); }} className="p-1 text-gray-400 hover:text-red-500" title="Delete Document"><window.Icon name="trash" size={12} /></button>
+                                                                    </div>
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ))}
                                         {folderDocs.map(doc => {
                                             const docId = doc.id || doc._id;
                                                                                         return (

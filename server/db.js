@@ -134,7 +134,9 @@ const folderSchema = new mongoose.Schema({
   name: { type: String, required: true },
   slug: { type: String }, // For dynamic URL e.g. folder name in url
   order: Number,
-  createdBy: String
+  createdBy: String,
+  description: String,
+  parentId: String
 }, { timestamps: true });
 folderSchema.set('toJSON', { virtuals: true });
 const Folder = mongoose.model('Folder', folderSchema);
