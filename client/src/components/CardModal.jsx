@@ -209,7 +209,7 @@ window.CardModal = ({ card, user, members, allUsers, onClose, onSave, onDelete, 
                                 const m = getMemberData(email);
                                 return (
                                     <div key={email} className="flex items-center gap-2 bg-gray-50 px-3 py-1.5 rounded-full border border-gray-100">
-                                        <window.Avatar label={email.charAt(0).toUpperCase()} src={m.avatar} size="sm" />
+                                        <window.Avatar label={window.getInitials(email)} src={m.avatar} size="sm" />
                                         <span className="text-[10px] font-bold">{email.split('@')[0]}</span>
                                         <button onClick={() => toggleAssignee(email)} className="text-gray-400 hover:text-red-500"><window.Icon name="x" size={12} /></button>
                                     </div>
@@ -221,7 +221,7 @@ window.CardModal = ({ card, user, members, allUsers, onClose, onSave, onDelete, 
                                     <div className="absolute top-full left-0 mt-2 w-48 bg-white rounded-2xl shadow-2xl border border-gray-100 p-2 z-[2000] animate-pop text-black">
                                         {members.map(email => (
                                             <button key={email} onClick={() => { toggleAssignee(email); setShowAssignDropdown(false); }} className={`w-full text-left p-2 rounded-xl text-[10px] font-bold flex items-center gap-2 hover:bg-gray-50 ${assignees.includes(email) ? 'bg-blue-50 text-blue-600' : ''}`}>
-                                                <window.Avatar label={email.charAt(0).toUpperCase()} src={getMemberData(email).avatar} size="sm" /> {email}
+                                                <window.Avatar label={window.getInitials(email)} src={getMemberData(email).avatar} size="sm" /> {email}
                                             </button>
                                         ))}
                                     </div>
@@ -307,7 +307,7 @@ window.CardModal = ({ card, user, members, allUsers, onClose, onSave, onDelete, 
                                 const m = getMemberData(cmt.authorEmail);
                                 return (
                                     <div key={cmt._id} className="flex gap-4 p-4 bg-gray-50 rounded-2xl border border-gray-100 group">
-                                        <window.Avatar label={cmt.authorEmail?.charAt(0).toUpperCase()} src={m.avatar} size="md" />
+                                        <window.Avatar label={window.getInitials(cmt.authorEmail)} src={m.avatar} size="md" />
                                         <div className="flex-1">
                                             <div className="flex justify-between items-center mb-1">
                                                 <div>
@@ -342,7 +342,7 @@ window.CardModal = ({ card, user, members, allUsers, onClose, onSave, onDelete, 
                                     <div className="absolute bottom-full left-0 mb-2 w-48 bg-white rounded-2xl shadow-2xl border border-gray-100 p-2 z-[2000] animate-pop text-black">
                                         {members.map(email => (
                                             <button key={email} onClick={() => addCommentTag(email)} className="w-full text-left p-2 rounded-xl text-[10px] font-bold flex items-center gap-2 hover:bg-gray-50">
-                                                <window.Avatar label={email.charAt(0).toUpperCase()} src={getMemberData(email).avatar} size="sm" /> {email.split('@')[0]}
+                                                <window.Avatar label={window.getInitials(email)} src={getMemberData(email).avatar} size="sm" /> {email.split('@')[0]}
                                             </button>
                                         ))}
                                     </div>

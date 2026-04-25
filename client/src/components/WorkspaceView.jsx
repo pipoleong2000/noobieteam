@@ -329,7 +329,7 @@ window.WorkspaceView = ({ workspace, onBack, user, onLogout, onThemeChange, them
     const [filterAssignee, setFilterAssignee] = React.useState('');
     const [filterEpic, setFilterEpic] = React.useState('');
     const [filterExpiring, setFilterExpiring] = React.useState(false);
-    const userLabel = React.useMemo(() => user?.email?.charAt(0).toUpperCase() || '?', [user]);
+    const userLabel = React.useMemo(() => window.getInitials(user?.email), [user]);
 
     
     const updateWorkspace = async (fields) => {
@@ -686,7 +686,7 @@ User Request: ${aiInput}` : aiInput;
                                         const md = getMemberData(m);
                                         return (
                                             <div key={m} className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-xl transition group">
-                                                <window.Avatar label={m.charAt(0).toUpperCase()} src={md.avatar} size="sm" story />
+                                                <window.Avatar label={window.getInitials(m)} src={md.avatar} size="sm" story />
                                                 <div className="flex-1 min-w-0">
                                                     <p className="text-sm font-black truncate">{m.split('@')[0]}</p>
                                                     <p className="text-xs text-gray-400 truncate">{m}</p>
@@ -941,7 +941,7 @@ User Request: ${aiInput}` : aiInput;
                                                     {card.assignees?.map(email => {
                                                         if (!email) return null;
                                                         const m = getMemberData(email);
-                                                        return <window.Avatar key={email} label={email.charAt(0).toUpperCase()} src={m.avatar} size="sm" active />;
+                                                        return <window.Avatar key={email} label={window.getInitials(email)} src={m.avatar} size="sm" active />;
                                                     })}
                                                 </div>
                                                 <div className="flex gap-2">
