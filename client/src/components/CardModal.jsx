@@ -162,6 +162,7 @@ window.CardModal = ({ card, user, members, allUsers, onClose, onSave, onDelete, 
             };
             reader.readAsDataURL(file);
         }
+        e.target.value = '';
     };
 
     const getMemberData = (email) => {
