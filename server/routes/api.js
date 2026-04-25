@@ -450,9 +450,19 @@ router.get('/public/docs/:wsId/:folderSlug', async (req, res) => {
     const folder = await Folder.findOne({ $or: query, workspaceId: workspace._id.toString() });
     if (!folder) return res.status(404).json({ error: 'Folder not found' });
     
-    const docs = await Doc.find({ workspaceId: workspace._id.toString(), folderId: folder._id }).sort({ order: 1, createdAt: 1 });
+    // Support 1-level deep subfolders
+    const subfolders = await Folder.find({ workspaceId: workspace._id.toString(), parentId: folder._id.toString() });
+    const subfolderIds = subfolders.map(f => f._id.toString());
     
-    res.json({ workspace: { id: workspace._id, name: workspace.name }, folder: { id: folder._id, name: folder.name, slug: folder.slug }, docs });
+    // Fetch docs in root folder AND subfolders
+    const docs = await Doc.find({ workspaceId: workspace._id.toString(), folderId: { $in: [folder._id.toString(), ...subfolderIds] } }).sort({ order: 1, createdAt: 1 });
+    
+    res.json({ 
+        workspace: { id: workspace._id, name: workspace.name }, 
+        folder: { id: folder._id, name: folder.name, slug: folder.slug, description: folder.description }, 
+        subfolders: subfolders.map(f => ({ id: f._id, name: f.name, parentId: f.parentId, description: f.description })),
+        docs 
+    });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
